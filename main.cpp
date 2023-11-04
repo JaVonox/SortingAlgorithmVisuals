@@ -77,6 +77,38 @@ void BubbleSort(int listSize, bool *swapped, int *listLeft)
     listLeft--;
 }
 
+void CocktailShakerSort(int listSize, bool *swapped, int *listLeft)
+{
+    *swapped = false;
+    for(int i = 1; i <= *listLeft - 1;i++)
+    {
+        if(sortableList[i - 1] > sortableList[i])
+        {
+            int index0Item = sortableList[i];
+            sortableList[i] = sortableList[i-1];
+            sortableList[i-1] = index0Item;
+            *swapped = true;
+        }
+    }
+
+    if(*swapped)
+    {
+        *swapped = false;
+        for(int i=*listLeft -1;i > 0;i--)
+        {
+            if(sortableList[i - 1] > sortableList[i])
+            {
+                int index0Item = sortableList[i];
+                sortableList[i] = sortableList[i-1];
+                sortableList[i-1] = index0Item;
+                *swapped = true;
+            }
+        }
+    }
+
+    listLeft--;
+}
+
 void DrawList(int listSize, SDL_Renderer *renderer)
 {
     for(int i;i<listSize;i++)
@@ -165,12 +197,12 @@ int main(int argc,char *argv[])
 
     while(true)
     {
-        if(animationState.frame == 0)
+        if(animationState.frame == 0 && animationState.phase != -1)
         {
             //Reset animation variables
             animationState.frameValA = 0; 
             animationState.frameValB = 0; 
-            _sleep(1500);
+            SDL_Delay(1500);
         }
 
         switch(animationState.phase)
@@ -181,12 +213,13 @@ int main(int argc,char *argv[])
                 animationState.frame++;
                 if(animationState.frame >= 500)
                 {
+                    cout << "Shuffle" << endl;
                     animationState.phase = 1;
                     animationState.frame = 0;
                     animationState.frameValA = -1;
                     animationState.frameValB = -1;
                 }
-                _sleep(5);
+                SDL_Delay(5);
                 break;
             }
             case(1):
@@ -196,28 +229,29 @@ int main(int argc,char *argv[])
 
                 if(animationState.frame >= 500)
                 {
+                    cout << "Insertion Sort" << endl;
                     animationState.phase = 2;
                     animationState.frame = 0;
                     animationState.frameValA = -1;
                     animationState.frameValB = -1;
                 }
-                _sleep(5);
+                SDL_Delay(5);
                 break;
             }
             case(2):
             {
-                
                 InsertionSort(listSize);
                 animationState.frame++;
 
                 if(animationState.frameValA >= listSize) //Run the sort and check if it is finished
                 {
+                    cout << "Shuffle" << endl;
                     animationState.phase = 3;
                     animationState.frame = 0;                    
                     animationState.frameValA = -1;
                     animationState.frameValB = -1;
                 }
-                _sleep(5);
+                SDL_Delay(5);
                 break;
             }
             case(3):
@@ -227,12 +261,13 @@ int main(int argc,char *argv[])
 
                 if(animationState.frame >= 500)
                 {
+                    cout << "Bubble Sort" << endl;
                     animationState.phase = 4;
                     animationState.frame = 0;
                     animationState.frameValA = -1;
                     animationState.frameValB = -1;
                 }
-                _sleep(5);
+                SDL_Delay(5);
                 break;
             }
             case(4):
@@ -245,12 +280,50 @@ int main(int argc,char *argv[])
 
                 if(swapped == false) //Run the sort and check if it is finished
                 {
+                    cout << "Shuffle" << endl;
                     animationState.phase = 5;
                     animationState.frame = 0;                    
                     animationState.frameValA = -1;
                     animationState.frameValB = -1;
                 }
-                _sleep(5);
+                SDL_Delay(5);
+                break;
+            }
+            case(5):
+            {
+                ShuffleList(listSize);
+                animationState.frame++;
+
+                if(animationState.frame >= 500)
+                {
+                    cout << "Cocktail Shaker Sort" << endl;
+                    animationState.phase = 6;
+                    animationState.frame = 0;
+                    animationState.frameValA = -1;
+                    animationState.frameValB = -1;
+                }
+                SDL_Delay(5);
+                break;
+            }
+            case(6):
+            {
+                bool swapped = false;
+                int iterationsLeft = listSize-animationState.frameValA;
+                CocktailShakerSort(listSize,&swapped, &iterationsLeft); 
+                //Unsure if this needs to be set to run over two frames, since its basically just doing bubble sort twice. Does it count as a single iteration if 
+                //Its doing two loops on each frame?
+                animationState.frameValA++;
+                animationState.frame++;
+
+                if(swapped == false) //Run the sort and check if it is finished
+                {
+                    cout << "Shuffle" << endl;
+                    animationState.phase = -1;
+                    animationState.frame = 0;                    
+                    animationState.frameValA = -1;
+                    animationState.frameValB = -1;
+                }
+                SDL_Delay(5);
                 break;
             }
             default:
