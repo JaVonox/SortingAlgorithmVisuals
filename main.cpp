@@ -61,6 +61,22 @@ void InsertionSort(int listSize)
     animationState.frameValA = animationState.frameValA + 1;
 }
 
+void BubbleSort(int listSize, bool *swapped, int *listLeft)
+{
+    *swapped = false;
+    for(int i = 1; i <= *listLeft - 1;i++)
+    {
+        if(sortableList[i - 1] > sortableList[i])
+        {
+            int index0Item = sortableList[i];
+            sortableList[i] = sortableList[i-1];
+            sortableList[i-1] = index0Item;
+            *swapped = true;
+        }
+    }
+    listLeft--;
+}
+
 void DrawList(int listSize, SDL_Renderer *renderer)
 {
     for(int i;i<listSize;i++)
@@ -73,7 +89,6 @@ void DrawList(int listSize, SDL_Renderer *renderer)
         rect.h = hVal;
 
         //HSL to RGB
-        //Lightness and saturation are constant for this specific program. Leaving them in there for future reference
         float lightness = 0.5f;
         float saturation = 1.0f;
         float cVal = (1.0f - abs(2.0f * lightness - 1.0f)) * saturation;
@@ -150,8 +165,17 @@ int main(int argc,char *argv[])
 
     while(true)
     {
+        if(animationState.frame == 0)
+        {
+            //Reset animation variables
+            animationState.frameValA = 0; 
+            animationState.frameValB = 0; 
+            _sleep(1500);
+        }
+
         switch(animationState.phase)
         {
+
             case(0):
             {
                 animationState.frame++;
@@ -159,6 +183,8 @@ int main(int argc,char *argv[])
                 {
                     animationState.phase = 1;
                     animationState.frame = 0;
+                    animationState.frameValA = -1;
+                    animationState.frameValB = -1;
                 }
                 _sleep(5);
                 break;
@@ -172,26 +198,59 @@ int main(int argc,char *argv[])
                 {
                     animationState.phase = 2;
                     animationState.frame = 0;
+                    animationState.frameValA = -1;
+                    animationState.frameValB = -1;
                 }
                 _sleep(5);
                 break;
             }
             case(2):
             {
-                if(animationState.frame == 0)
-                {
-                    animationState.frameValA = 0; //This will store the i value for the sorting algorithm
-                }
                 
                 InsertionSort(listSize);
-                _sleep(5);
                 animationState.frame++;
 
                 if(animationState.frameValA >= listSize) //Run the sort and check if it is finished
                 {
                     animationState.phase = 3;
-                    animationState.frame = 0;
+                    animationState.frame = 0;                    
+                    animationState.frameValA = -1;
+                    animationState.frameValB = -1;
                 }
+                _sleep(5);
+                break;
+            }
+            case(3):
+            {
+                ShuffleList(listSize);
+                animationState.frame++;
+
+                if(animationState.frame >= 500)
+                {
+                    animationState.phase = 4;
+                    animationState.frame = 0;
+                    animationState.frameValA = -1;
+                    animationState.frameValB = -1;
+                }
+                _sleep(5);
+                break;
+            }
+            case(4):
+            {
+                bool swapped = false;
+                int iterationsLeft = listSize-animationState.frameValA;
+                BubbleSort(listSize,&swapped, &iterationsLeft);
+                animationState.frameValA++;
+                animationState.frame++;
+
+                if(swapped == false) //Run the sort and check if it is finished
+                {
+                    animationState.phase = 5;
+                    animationState.frame = 0;                    
+                    animationState.frameValA = -1;
+                    animationState.frameValB = -1;
+                }
+                _sleep(5);
                 break;
             }
             default:
