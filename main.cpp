@@ -8,7 +8,6 @@ using namespace std;
 struct
 {
     int phase = 0; //Selects which phase of generation the software is currently in
-    //Phase 0 = initial list, phase 1 = shuffling, phase 2 insertionsort, phase 3 shuffling
     int frame = 0;
 
     //Extra values to store in order to store variables for the sorting algorithms
@@ -25,27 +24,29 @@ vector<int> sortableList = {}; //List to be sorted
 
 bool CheckListIsSorted(int size)
 {
-    for(int i =1;i<size;i++)
+    for(int i =0;i<size;i++)
     {
-        if(sortableList[i] != i)
+        if(sortableList[i] != i+1)
         {
+            cout << "Check failed at value " << sortableList[i] << " position " << i << " expected " << i + 1 << endl;
             return false;
         }
     }
+    cout << "Passed check";
     return true;
 }
 void PopulateList(int size)
 {
-    for(int i =1;i<size;i++)
+    for(int i =0;i<size;i++)
     {
-        sortableList.push_back(i);
+        sortableList.push_back(i+1);
     }
 }
 
 void ShuffleList(int listSize)
 {
-    int swapIndex0 = rand() % (listSize + 1);
-    int swapIndex1 = rand() % (listSize + 1);
+    int swapIndex0 = rand() % listSize;
+    int swapIndex1 = rand() % listSize;
 
     int index0Item = sortableList[swapIndex0];
     sortableList[swapIndex0] = sortableList[swapIndex1];
@@ -97,7 +98,7 @@ void BubbleSort(int listSize)
 {
     switch(animationState.sortState)
     {
-        case(0):
+        case(0): //State 0 is before the system loops
         {   
             animationState.frameValBool = false;
             animationState.sortState = 1;
@@ -105,7 +106,7 @@ void BubbleSort(int listSize)
             animationState.frameValA++;
             break;
         }
-        case(1):
+        case(1): //State 1 is when the loop occurs
         {
             
             if(animationState.frameValB <= (listSize - animationState.frameValA) - 1)
@@ -128,48 +129,78 @@ void BubbleSort(int listSize)
     }
 }
 
-void CocktailShakerSort(int listSize, bool *swapped, int *listLeft)
+void CocktailShakerSort(int listSize)
 {
-    *swapped = false;
-    for(int i = 1; i <= *listLeft - 1;i++)
+    switch(animationState.sortState)
     {
-        if(sortableList[i - 1] > sortableList[i])
-        {
-            int index0Item = sortableList[i];
-            sortableList[i] = sortableList[i-1];
-            sortableList[i-1] = index0Item;
-            *swapped = true;
+        case(0): //Initialisation
+        {   
+            animationState.frameValBool = false;
+            animationState.sortState = 1;
+            animationState.frameValB = 1;
+            animationState.frameValA++;
+            break;
         }
-    }
-
-    if(*swapped)
-    {
-        *swapped = false;
-        for(int i=*listLeft -1;i > 0;i--)
+        case(1): //First loop
         {
-            if(sortableList[i - 1] > sortableList[i])
+            
+            if(animationState.frameValB <= (listSize - animationState.frameValA))
             {
-                int index0Item = sortableList[i];
-                sortableList[i] = sortableList[i-1];
-                sortableList[i-1] = index0Item;
-                *swapped = true;
+                if(sortableList[animationState.frameValB - 1] > sortableList[animationState.frameValB])
+                {
+                    int index0Item = sortableList[animationState.frameValB];
+                    sortableList[animationState.frameValB] = sortableList[animationState.frameValB-1];
+                    sortableList[animationState.frameValB-1] = index0Item;
+                    animationState.frameValBool = true;
+                }
+                animationState.frameValB++;
             }
+            else
+            {
+                if(animationState.frameValBool) //Enter backwards loop
+                {
+                    animationState.frameValB = (listSize - animationState.frameValA);
+                    animationState.sortState = 2;
+                }
+                else
+                {
+                    animationState.sortState = 0;
+                }
+            }
+            break;
+        }
+        case(2): //Second loop
+        {
+            if(animationState.frameValB > animationState.frameValA)
+            {
+                if(sortableList[animationState.frameValB - 1] > sortableList[animationState.frameValB])
+                {
+                    int index0Item = sortableList[animationState.frameValB];
+                    sortableList[animationState.frameValB] = sortableList[animationState.frameValB-1];
+                    sortableList[animationState.frameValB-1] = index0Item;
+                    animationState.frameValBool = true;
+                }
+                animationState.frameValB--;
+            }
+            else
+            {
+                animationState.sortState = 0;
+            }
+            break;
         }
     }
-
-    listLeft--;
 }
 
 void DrawList(int listSize, SDL_Renderer *renderer)
 {
-    for(int i;i<listSize;i++)
+    for(int i=0;i<listSize;i++)
     {
-        float hVal = sortableList[i]; //The 0-360 value that represents the value and the hue of a column.
+        float hVal = sortableList[i]; //The 1-360 value that represents the value and the hue of a column.
         SDL_Rect rect;
         rect.x = 3 + (i * 4);
         rect.w = 3;
         rect.y = 500 - hVal;
-        rect.h = hVal;
+        rect.h = hVal + 10;
 
         //HSL to RGB
         float lightness = 0.5f;
@@ -231,7 +262,8 @@ void DrawList(int listSize, SDL_Renderer *renderer)
                     mVal = 0.0f;
                     break;
                 }
-                case(4): //Bubble sort - only B is white
+                case(4): //Bubble sort - only B is white - falls into case 6
+                case(6): //Cocktail shaker sort - only B is white
                 {
                     if(i==animationState.frameValB)
                     {
@@ -293,9 +325,9 @@ int main(int argc,char *argv[])
                     cout << "Shuffle" << endl;
                     animationState.phase = 1;
                     animationState.frame = 0;
-                    animationState.frameValA = -1;
-                    animationState.frameValB = -1;
-                    animationState.sortState = -1;
+                    animationState.frameValA = 1;
+                    animationState.frameValB = 0;
+                    animationState.sortState = 0;
                     animationState.frameValBool = false;
                 }
                 SDL_Delay(5);
@@ -312,7 +344,7 @@ int main(int argc,char *argv[])
                     animationState.phase = 2;
                     animationState.frame = 0;
                     animationState.frameValA = 0;
-                    animationState.frameValB = -1;
+                    animationState.frameValB = 0;
                     animationState.sortState = 0;
                     animationState.frameValBool = false;
                 }
@@ -326,12 +358,13 @@ int main(int argc,char *argv[])
 
                 if(animationState.frameValA >= listSize) //Run the sort and check if it is finished
                 {
+                    CheckListIsSorted(listSize);
                     cout << "Shuffle" << endl;
                     animationState.phase = 3;
                     animationState.frame = 0;                    
-                    animationState.frameValA = -1;
-                    animationState.frameValB = -1;
-                    animationState.sortState = -1;
+                    animationState.frameValA = 0;
+                    animationState.frameValB = 0;
+                    animationState.sortState = 0;
                     animationState.frameValBool = false;                
                 }
                 SDL_Delay(1);
@@ -362,12 +395,13 @@ int main(int argc,char *argv[])
 
                 if(animationState.frameValBool == false && animationState.sortState == 0) //Run the sort and check if it is finished
                 {
+                    CheckListIsSorted(listSize);
                     cout << "Shuffle" << endl;
                     animationState.phase = 5;
                     animationState.frame = 0;                    
-                    animationState.frameValA = -1;
-                    animationState.frameValB = -1;
-                    animationState.sortState = -1;
+                    animationState.frameValA = 0;
+                    animationState.frameValB = 0;
+                    animationState.sortState = 0;
                     animationState.frameValBool = false;
                 }
 
@@ -384,7 +418,7 @@ int main(int argc,char *argv[])
 
                 if(animationState.frame >= 500)
                 {
-                    cout << "Cocktail Shaker Sort" << endl;
+                    "Cocktail Shaker Sort";
                     animationState.phase = 6;
                     animationState.frame = 0;
                     animationState.frameValA = 0;
@@ -397,24 +431,27 @@ int main(int argc,char *argv[])
             }
             case(6):
             {
-                bool swapped = false;
-                int iterationsLeft = listSize-animationState.frameValA;
-                CocktailShakerSort(listSize,&swapped, &iterationsLeft); 
-                //Unsure if this needs to be set to run over two frames, since its basically just doing bubble sort twice. Does it count as a single iteration if 
-                //Its doing two loops on each frame?
-                animationState.frameValA++;
+                CocktailShakerSort(listSize); 
                 animationState.frame++;
 
-                if(swapped == false && animationState.sortState == 0) //Run the sort and check if it is finished
+                if(animationState.frameValBool == false && animationState.sortState == 0) //Run the sort and check if it is finished
                 {
+                    cout << CheckListIsSorted(listSize) << endl;
                     cout << "Shuffle" << endl;
                     animationState.phase = -1;
                     animationState.frame = 0;                    
-                    animationState.frameValA = -1;
-                    animationState.frameValB = -1;
+                    animationState.frameValA = 0;
+                    animationState.frameValB = 0;
+                    animationState.sortState = 0;
                     animationState.frameValBool = false;
                 }
-                SDL_Delay(5);
+
+                SDL_Delay(1);
+                //if(animationState.sortState != 0)
+                //{
+                //    SDL_Delay(1);
+                //}
+
                 break;
             }
             default:
