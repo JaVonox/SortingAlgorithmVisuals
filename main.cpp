@@ -32,7 +32,7 @@ bool CheckListIsSorted(int size)
             return false;
         }
     }
-    cout << "Passed check";
+    cout << "Passed check" << endl;
     return true;
 }
 void PopulateList(int size)
@@ -136,9 +136,9 @@ void CocktailShakerSort(int listSize)
         case(0): //Initialisation
         {   
             animationState.frameValBool = false;
-            animationState.sortState = 1;
-            animationState.frameValB = 1;
+            animationState.frameValB = animationState.frameValA < 1 ? 1 : animationState.frameValA;
             animationState.frameValA++;
+            animationState.sortState = 1;
             break;
         }
         case(1): //First loop
@@ -254,14 +254,14 @@ void DrawList(int listSize, SDL_Renderer *renderer)
         {
             switch(animationState.phase)
             {
-                case(2): //Insertion sort - both A and B are white
-                {
-                    redVal = 1.0f;
-                    greenVal = 1.0f;
-                    blueVal = 1.0f;
-                    mVal = 0.0f;
-                    break;
-                }
+                case(2): //Insertion sort - both A and B are white - currently defaults to only B white to do appearance testing
+                //{
+                //    redVal = 1.0f;
+                //    greenVal = 1.0f;
+                //    blueVal = 1.0f;
+                //    mVal = 0.0f;
+                //    break;
+                //}
                 case(4): //Bubble sort - only B is white - falls into case 6
                 case(6): //Cocktail shaker sort - only B is white
                 {
@@ -422,7 +422,7 @@ int main(int argc,char *argv[])
                     animationState.phase = 6;
                     animationState.frame = 0;
                     animationState.frameValA = 0;
-                    animationState.frameValB = 0;
+                    animationState.frameValB = -1;
                     animationState.sortState = 0;
                     animationState.frameValBool = false;
                 }
@@ -436,7 +436,7 @@ int main(int argc,char *argv[])
 
                 if(animationState.frameValBool == false && animationState.sortState == 0) //Run the sort and check if it is finished
                 {
-                    cout << CheckListIsSorted(listSize) << endl;
+                    CheckListIsSorted(listSize);
                     cout << "Shuffle" << endl;
                     animationState.phase = -1;
                     animationState.frame = 0;                    
@@ -446,11 +446,10 @@ int main(int argc,char *argv[])
                     animationState.frameValBool = false;
                 }
 
-                SDL_Delay(1);
-                //if(animationState.sortState != 0)
-                //{
-                //    SDL_Delay(1);
-                //}
+                if(animationState.sortState != 0)
+                {
+                    SDL_Delay(1);
+                }
 
                 break;
             }
