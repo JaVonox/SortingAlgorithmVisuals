@@ -7,7 +7,7 @@ using namespace std;
 
 struct
 {
-    int phase = 0; //Selects which phase of generation the software is currently in
+    int phase = 7; //Selects which phase of generation the software is currently in
     int frame = 0;
 
     //Extra values to store in order to store variables for the sorting algorithms
@@ -191,6 +191,58 @@ void CocktailShakerSort(int listSize)
     }
 }
 
+int QuickSortPartition(int listSize, int low, int high) //returns the new pivot index
+{
+    int pivot = sortableList[high];
+    int i = low - 1;
+
+    for(int j=low; j<high;j++)
+    {
+        if(sortableList[j] <= pivot)
+        {
+            i++;
+
+            //swap values
+
+            int index0Item = sortableList[i];
+            sortableList[i] = sortableList[j];
+            sortableList[j] = index0Item;
+        }
+    }
+
+    int index1Item = sortableList[i+1];
+    sortableList[i+1] = sortableList[high];
+    sortableList[high] = index1Item;
+
+    return i + 1;
+}
+
+void QuickSort(int listSize, int low, int high)
+{
+    vector<tuple<int,int,int>> recursionArgs = {}; //Stores the arguments for each recursion that needs to be completed. partIndex, low and high
+
+    int partIndex = QuickSortPartition(listSize,low,high);
+    recursionArgs.push_back({partIndex,low,partIndex-1}); //Push in left pivot
+    recursionArgs.push_back({partIndex,partIndex+1,high}); //Push in right pivot
+
+    while(size(recursionArgs) > 0)
+    {
+        //Get values out of vector tuple and them remove it from the vector
+        tuple<int,int,int> iteratedTuple = recursionArgs.back();
+        int nPartIndex = get<0>(iteratedTuple); //Get partition index at this recursion depth
+        int nLow = get<1>(iteratedTuple);
+        int nHigh = get<2>(iteratedTuple);
+        recursionArgs.pop_back(); //Removes the back element
+ 
+        if(nLow < nHigh)
+        {
+            int nPartIndex = QuickSortPartition(listSize,nLow,nHigh);
+            recursionArgs.push_back({nPartIndex,nLow,nPartIndex-1}); //Push in left pivot
+            recursionArgs.push_back({nPartIndex,nPartIndex+1,nHigh}); //Push in right pivot
+        }
+    }
+}
+
 void DrawList(int listSize, SDL_Renderer *renderer)
 {
     for(int i=0;i<listSize;i++)
@@ -262,8 +314,9 @@ void DrawList(int listSize, SDL_Renderer *renderer)
                 //    mVal = 0.0f;
                 //    break;
                 //}
-                case(4): //Bubble sort - only B is white - falls into case 6
+                case(4): //Bubble sort - only B is white - falls through
                 case(6): //Cocktail shaker sort - only B is white
+                case(8): //Quicksort - only B is white
                 {
                     if(i==animationState.frameValB)
                     {
@@ -438,7 +491,7 @@ int main(int argc,char *argv[])
                 {
                     CheckListIsSorted(listSize);
                     cout << "Shuffle" << endl;
-                    animationState.phase = -1;
+                    animationState.phase = 7;
                     animationState.frame = 0;                    
                     animationState.frameValA = 0;
                     animationState.frameValB = 0;
@@ -451,6 +504,45 @@ int main(int argc,char *argv[])
                     SDL_Delay(1);
                 }
 
+                break;
+            }
+            case(7):
+            {
+                ShuffleList(listSize);
+                animationState.frame++;
+
+                if(animationState.frame >= 500)
+                {
+                    "Quick Sort";
+                    animationState.phase = 8;
+                    animationState.frame = 0;
+                    animationState.frameValA = 0;
+                    animationState.frameValB = -1;
+                    animationState.sortState = 0;
+                    animationState.frameValBool = false;
+                }
+                SDL_Delay(5);
+                break;
+            }
+            case(8):
+            {
+
+                QuickSort(listSize,0,listSize-1);
+                animationState.frame++;
+                SDL_Delay(1);
+
+                if(true) //Run the sort and check if it is finished
+                {
+                    CheckListIsSorted(listSize);
+                    cout << "Shuffle" << endl;
+                    animationState.phase = -1;
+                    animationState.frame = 0;                    
+                    animationState.frameValA = 0;
+                    animationState.frameValB = 0;
+                    animationState.sortState = 0;
+                    animationState.frameValBool = false;                
+                }
+                SDL_Delay(1);
                 break;
             }
             default:
