@@ -14,6 +14,7 @@ struct
     int frameValA = -1;
     int frameValB = -1;
     bool frameValBool = false;
+    vector<tuple<int,int,int>> frameValVector = {};
 
     //Values to store state within the sorting algorithm
     int sortState = -1;
@@ -217,28 +218,42 @@ int QuickSortPartition(int listSize, int low, int high) //returns the new pivot 
     return i + 1;
 }
 
-void QuickSort(int listSize, int low, int high)
+void QuickSort(int listSize)
 {
-    vector<tuple<int,int,int>> recursionArgs = {}; //Stores the arguments for each recursion that needs to be completed. partIndex, low and high
 
-    int partIndex = QuickSortPartition(listSize,low,high);
-    recursionArgs.push_back({partIndex,low,partIndex-1}); //Push in left pivot
-    recursionArgs.push_back({partIndex,partIndex+1,high}); //Push in right pivot
-
-    while(size(recursionArgs) > 0)
+    switch(animationState.sortState)
     {
-        //Get values out of vector tuple and them remove it from the vector
-        tuple<int,int,int> iteratedTuple = recursionArgs.back();
-        int nPartIndex = get<0>(iteratedTuple); //Get partition index at this recursion depth
-        int nLow = get<1>(iteratedTuple);
-        int nHigh = get<2>(iteratedTuple);
-        recursionArgs.pop_back(); //Removes the back element
- 
-        if(nLow < nHigh)
+        case(0): //Initialisation
         {
-            int nPartIndex = QuickSortPartition(listSize,nLow,nHigh);
-            recursionArgs.push_back({nPartIndex,nLow,nPartIndex-1}); //Push in left pivot
-            recursionArgs.push_back({nPartIndex,nPartIndex+1,nHigh}); //Push in right pivot
+            int partIndex = QuickSortPartition(listSize,0,listSize-1);
+            animationState.frameValVector.push_back({partIndex,0,partIndex-1}); //Push in left pivot
+            animationState.frameValVector.push_back({partIndex,partIndex+1,listSize-1}); //Push in right pivot
+            animationState.sortState = 1;
+            break;
+        }
+        case(1): //Iteration
+        {
+            if(size(animationState.frameValVector) > 0)
+            {
+                //Get values out of vector tuple and them remove it from the vector
+                tuple<int,int,int> iteratedTuple = animationState.frameValVector.back();
+                int nPartIndex = get<0>(iteratedTuple); //Get partition index at this recursion depth
+                int nLow = get<1>(iteratedTuple);
+                int nHigh = get<2>(iteratedTuple);
+                animationState.frameValVector.pop_back(); //Removes the back element
+ 
+                if(nLow < nHigh)
+                {
+                    int nPartIndex = QuickSortPartition(listSize,nLow,nHigh);
+                    animationState.frameValVector.push_back({nPartIndex,nLow,nPartIndex-1}); //Push in left pivot
+                    animationState.frameValVector.push_back({nPartIndex,nPartIndex+1,nHigh}); //Push in right pivot
+                }
+            }
+            else
+            {
+                animationState.sortState = 2;
+            }
+            break;
         }
     }
 }
@@ -381,6 +396,7 @@ int main(int argc,char *argv[])
                     animationState.frameValA = 1;
                     animationState.frameValB = 0;
                     animationState.sortState = 0;
+                    animationState.frameValVector.clear();
                     animationState.frameValBool = false;
                 }
                 SDL_Delay(5);
@@ -399,6 +415,7 @@ int main(int argc,char *argv[])
                     animationState.frameValA = 0;
                     animationState.frameValB = 0;
                     animationState.sortState = 0;
+                    animationState.frameValVector.clear();
                     animationState.frameValBool = false;
                 }
                 SDL_Delay(5);
@@ -418,6 +435,7 @@ int main(int argc,char *argv[])
                     animationState.frameValA = 0;
                     animationState.frameValB = 0;
                     animationState.sortState = 0;
+                    animationState.frameValVector.clear();
                     animationState.frameValBool = false;                
                 }
                 SDL_Delay(1);
@@ -436,6 +454,7 @@ int main(int argc,char *argv[])
                     animationState.frameValA = -1;
                     animationState.frameValB = -1;
                     animationState.sortState = 0;
+                    animationState.frameValVector.clear();
                     animationState.frameValBool = false;
                 }
                 SDL_Delay(5);
@@ -455,6 +474,7 @@ int main(int argc,char *argv[])
                     animationState.frameValA = 0;
                     animationState.frameValB = 0;
                     animationState.sortState = 0;
+                    animationState.frameValVector.clear();
                     animationState.frameValBool = false;
                 }
 
@@ -477,6 +497,7 @@ int main(int argc,char *argv[])
                     animationState.frameValA = 0;
                     animationState.frameValB = -1;
                     animationState.sortState = 0;
+                    animationState.frameValVector.clear();
                     animationState.frameValBool = false;
                 }
                 SDL_Delay(5);
@@ -496,6 +517,7 @@ int main(int argc,char *argv[])
                     animationState.frameValA = 0;
                     animationState.frameValB = 0;
                     animationState.sortState = 0;
+                    animationState.frameValVector.clear();
                     animationState.frameValBool = false;
                 }
 
@@ -513,12 +535,13 @@ int main(int argc,char *argv[])
 
                 if(animationState.frame >= 500)
                 {
-                    "Quick Sort";
+                    cout << "Quick Sort" << endl;
                     animationState.phase = 8;
                     animationState.frame = 0;
                     animationState.frameValA = 0;
                     animationState.frameValB = -1;
                     animationState.sortState = 0;
+                    animationState.frameValVector.clear();
                     animationState.frameValBool = false;
                 }
                 SDL_Delay(5);
@@ -527,11 +550,10 @@ int main(int argc,char *argv[])
             case(8):
             {
 
-                QuickSort(listSize,0,listSize-1);
+                QuickSort(listSize);
                 animationState.frame++;
-                SDL_Delay(1);
 
-                if(true) //Run the sort and check if it is finished
+                if(animationState.sortState == 2) //Run the sort and check if it is finished
                 {
                     CheckListIsSorted(listSize);
                     cout << "Shuffle" << endl;
@@ -540,6 +562,7 @@ int main(int argc,char *argv[])
                     animationState.frameValA = 0;
                     animationState.frameValB = 0;
                     animationState.sortState = 0;
+                    animationState.frameValVector.clear();
                     animationState.frameValBool = false;                
                 }
                 SDL_Delay(1);
