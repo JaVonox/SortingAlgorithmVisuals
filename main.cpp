@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include <vector>
 #include <math.h>
-
+#include <SDL2/SDL_ttf.h>
 using namespace std;
 
 struct
@@ -22,6 +22,11 @@ struct
 } animationState;
 
 vector<int> sortableList = {}; //List to be sorted
+
+//Text Rendering variables
+SDL_Texture* textTexture;
+SDL_Surface* textSurface;
+SDL_Rect textRect;
 
 bool CheckListIsSorted(int size)
 {
@@ -396,16 +401,59 @@ void DrawList(int listSize, SDL_Renderer *renderer)
     }
 }
 
+void InitialiseText(SDL_Renderer *renderer, SDL_Rect *rect, char* text)
+{ 
+    if(textTexture != NULL)
+    {
+        SDL_DestroyTexture(textTexture);
+        textTexture = NULL;
+        SDL_FreeSurface(textSurface);
+        textSurface = NULL;
+    }
+
+    TTF_Font* Sans = TTF_OpenFont("OpenSans.ttf",24);
+    SDL_Color White = {255,255,255};
+    textSurface = TTF_RenderText_Solid(Sans, text,White);
+    textTexture = SDL_CreateTextureFromSurface(renderer,textSurface);
+
+    int tWidth =0;
+    int tHeight = 0;
+    SDL_QueryTexture(textTexture,NULL,NULL,&tWidth,&tHeight);
+    textRect.x = 10;
+    textRect.y = 10;
+    textRect.w = tWidth;
+    textRect.h = tHeight;
+
+    SDL_RenderCopy(renderer,textTexture,NULL,rect);
+    TTF_CloseFont(Sans);
+}
+
+void DrawText(SDL_Renderer *renderer, SDL_Rect *rect)
+{
+    SDL_RenderCopy(renderer,textTexture,NULL,rect);
+}
+
 int main(int argc,char *argv[])
 {
     srand(time(NULL));
 
     SDL_Init(SDL_INIT_EVERYTHING);
+    TTF_Init();
     SDL_Window *window = SDL_CreateWindow("Sorting Algorithm Visualiser",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,1206,600,SDL_WINDOW_ALLOW_HIGHDPI);
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window,-1,0);
+
+    textRect.x = 0;
+    textRect.y = 0;
+    textRect.w = 500;
+    textRect.h = 100;
+
     SDL_SetRenderDrawColor(renderer,0,0,0,255);
     SDL_RenderClear(renderer);
+
+    InitialiseText(renderer,&textRect,"Initialization");
+    DrawText(renderer,&textRect);
+
     SDL_RenderPresent(renderer);
 
     int listSize = 300;
@@ -414,6 +462,8 @@ int main(int argc,char *argv[])
     DrawList(listSize,renderer);
 
     SDL_RenderPresent(renderer);
+
+    
 
     SDL_Event event;
 
@@ -432,7 +482,7 @@ int main(int argc,char *argv[])
                 animationState.frame++;
                 if(animationState.frame >= 500)
                 {
-                    cout << "Shuffle" << endl;
+                    InitialiseText(renderer,&textRect,"Shuffling");
                     animationState.phase = 1;
                     animationState.frame = 0;
                     animationState.frameValA = 1;
@@ -451,7 +501,7 @@ int main(int argc,char *argv[])
 
                 if(animationState.frame >= 500)
                 {
-                    cout << "Insertion Sort" << endl;
+                    InitialiseText(renderer,&textRect,"Insertion Sort");
                     animationState.phase = 2;
                     animationState.frame = 0;
                     animationState.frameValA = 0;
@@ -471,7 +521,7 @@ int main(int argc,char *argv[])
                 if(animationState.frameValA >= listSize) //Run the sort and check if it is finished
                 {
                     CheckListIsSorted(listSize);
-                    cout << "Shuffle" << endl;
+                    InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = 3;
                     animationState.frame = 0;                    
                     animationState.frameValA = 0;
@@ -490,7 +540,7 @@ int main(int argc,char *argv[])
 
                 if(animationState.frame >= 500)
                 {
-                    cout << "Bubble Sort" << endl;
+                    InitialiseText(renderer,&textRect,"Bubble Sort");
                     animationState.phase = 4;
                     animationState.frame = 0;
                     animationState.frameValA = -1;
@@ -510,7 +560,7 @@ int main(int argc,char *argv[])
                 if(animationState.frameValBool == false && animationState.sortState == 0) //Run the sort and check if it is finished
                 {
                     CheckListIsSorted(listSize);
-                    cout << "Shuffle" << endl;
+                    InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = 5;
                     animationState.frame = 0;                    
                     animationState.frameValA = 0;
@@ -533,7 +583,7 @@ int main(int argc,char *argv[])
 
                 if(animationState.frame >= 500)
                 {
-                    "Cocktail Shaker Sort";
+                    InitialiseText(renderer,&textRect,"Cocktail Shaker Sort");
                     animationState.phase = 6;
                     animationState.frame = 0;
                     animationState.frameValA = 0;
@@ -553,7 +603,7 @@ int main(int argc,char *argv[])
                 if(animationState.frameValBool == false && animationState.sortState == 0) //Run the sort and check if it is finished
                 {
                     CheckListIsSorted(listSize);
-                    cout << "Shuffle" << endl;
+                    InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = 7;
                     animationState.frame = 0;                    
                     animationState.frameValA = 0;
@@ -577,7 +627,7 @@ int main(int argc,char *argv[])
 
                 if(animationState.frame >= 500)
                 {
-                    cout << "Quick Sort" << endl;
+                    InitialiseText(renderer,&textRect,"Quick Sort");
                     animationState.phase = 8;
                     animationState.frame = 0;
                     animationState.frameValA = -1;
@@ -598,7 +648,7 @@ int main(int argc,char *argv[])
                 if(animationState.sortState == 3) //Run the sort and check if it is finished
                 {
                     CheckListIsSorted(listSize);
-                    cout << "Shuffle" << endl;
+                    InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = -1;
                     animationState.frame = 0;                    
                     animationState.frameValA = 0;
@@ -621,6 +671,8 @@ int main(int argc,char *argv[])
         SDL_SetRenderDrawColor(renderer,0,0,0,255);
         SDL_RenderClear(renderer);
         DrawList(listSize,renderer);
+        DrawText(renderer,&textRect);
+
         SDL_RenderPresent(renderer);
 
         if(SDL_PollEvent(&event))
