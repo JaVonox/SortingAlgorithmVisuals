@@ -14,7 +14,8 @@ struct
     int frameValA = -1;
     int frameValB = -1;
     bool frameValBool = false;
-    vector<tuple<int,int>> frameValVector = {};
+    vector<int> secondaryList = {}; //Used for storing single value items
+    vector<tuple<int,int,int,bool>> frameValVector = {};
 
     //Values to store state within the sorting algorithm
     int sortState = -1;
@@ -41,6 +42,7 @@ bool CheckListIsSorted(int size)
     cout << "Passed check" << endl;
     return true;
 }
+
 void PopulateList(int size)
 {
     for(int i =0;i<size;i++)
@@ -244,8 +246,8 @@ void QuickSort(int listSize)
             int partIndex = QuickSortPartition(0,listSize-1);
             if(animationState.frameValBool) //When the partition has finished
             {
-                animationState.frameValVector.push_back({0,partIndex-1}); //Push in left pivot
-                animationState.frameValVector.push_back({partIndex+1,listSize-1}); //Push in right pivot
+                animationState.frameValVector.push_back({0,partIndex-1,0,0}); //Push in left pivot
+                animationState.frameValVector.push_back({partIndex+1,listSize-1,0,0}); //Push in right pivot
                 animationState.sortState = 1;
             }
             break;
@@ -260,7 +262,7 @@ void QuickSort(int listSize)
             if(size(animationState.frameValVector) > 0)
             {
                 //Get values out of vector tuple and them remove it from the vector
-                tuple<int,int> iteratedTuple = animationState.frameValVector.back();
+                tuple<int,int,int,bool> iteratedTuple = animationState.frameValVector.back();
                 int nLow = get<0>(iteratedTuple);
                 int nHigh = get<1>(iteratedTuple);
  
@@ -284,7 +286,7 @@ void QuickSort(int listSize)
         case(2): //Partitioning
         {
             //Gets the values from the vector
-            tuple<int,int> iteratedTuple = animationState.frameValVector.back();
+            tuple<int,int,int,bool> iteratedTuple = animationState.frameValVector.back();
             int nLow = get<0>(iteratedTuple);
             int nHigh = get<1>(iteratedTuple);
 
@@ -295,8 +297,8 @@ void QuickSort(int listSize)
                 animationState.frameValA = -1;
                 animationState.frameValB = -1;
                 animationState.frameValVector.pop_back(); //Removes the back element when it is no longer needed
-                animationState.frameValVector.push_back({nLow,nPartIndex-1}); //Push in left pivot
-                animationState.frameValVector.push_back({nPartIndex+1,nHigh}); //Push in right pivot
+                animationState.frameValVector.push_back({nLow,nPartIndex-1,0,0}); //Push in left pivot
+                animationState.frameValVector.push_back({nPartIndex+1,nHigh,0,0}); //Push in right pivot
 
                 animationState.sortState = 1;
             }
@@ -316,31 +318,34 @@ void IterateMerge(int begin, int middle, int end, bool isSwapped)
         {
             if(i < middle && (j >= end || sortableList[i] <= sortableList[j]))
             {
-                animationState.frameValVector.at(k) = tuple<int,int>{sortableList[i],0};
+                animationState.secondaryList.at(k) = sortableList[i];
                 i++;
             }
             else
             {
-                animationState.frameValVector.at(k) = tuple<int,int>{sortableList[j],0};
+                animationState.secondaryList.at(k) = sortableList[j];
                 j++;
             }
         }
+        cout << "Swapped loop ends" << endl;
     }
     else
     {
         for(int k = begin; k< end;k++)
         {
-            if(i < middle && (j >= end || animationState.frameValVector.at(i) <= animationState.frameValVector.at(j)))
+            if(i < middle && (j >= end || animationState.secondaryList.at(i) <= animationState.secondaryList.at(j)))
             {
-                sortableList[k] = get<0>(animationState.frameValVector.at(i));
+                sortableList[k] = animationState.secondaryList.at(i);
                 i++;
             }
             else
             {
-                sortableList[k] = get<0>(animationState.frameValVector.at(j));
+                sortableList[k] = animationState.secondaryList.at(j);
                 j++;
             }
         }
+
+        cout << "Not swapped loop ends" << endl;
     }
 }
 
@@ -348,11 +353,11 @@ void CopyArray(int begin, int end)
 {
     for(int i = begin; i<end;i++)
     {
-        animationState.frameValVector.at(i) = tuple<int,int>{sortableList[i],0};
+        animationState.secondaryList.at(i) = sortableList[i];
     }
 }
 
-void MergeSplit(int begin, int end, bool isSwapped) //is Swapped tells the code if the arrays should be swapped in the next function call
+void MergeSplit(int begin, int end, bool isSwapped) //is Swapped tells the code if the arrays should be swapped in the next function call. null is just so it can be used in the queue
 {
     if(end - begin <= 1)
     {
@@ -361,9 +366,16 @@ void MergeSplit(int begin, int end, bool isSwapped) //is Swapped tells the code 
 
     int middle = (end + begin) /2;
 
-    MergeSplit(begin,middle,!isSwapped);
-    MergeSplit(middle,end,!isSwapped);
-    IterateMerge(begin, middle, end, isSwapped);
+    //Append the next item to the action stack. 
+    animationState.frameValVector.push_back(tuple<int,int,int,bool>{begin,middle,end,isSwapped});
+
+    //The -1 as the end value represents this as a merge split call
+    animationState.frameValVector.push_back(tuple<int,int,int,bool>{middle,end,-1,!isSwapped});
+    animationState.frameValVector.push_back(tuple<int,int,int,bool>{begin,middle,-1,!isSwapped});
+
+    //MergeSplit(begin,middle,!isSwapped);
+    //MergeSplit(middle,end,!isSwapped);
+    //IterateMerge(begin, middle, end, isSwapped);
 
 }
 
@@ -371,14 +383,61 @@ void GenerateVector(int listSize)
 {
     for(int i = 0; i<listSize;i++)
     {
-        animationState.frameValVector.push_back(tuple<int,int>{0,0});
+        animationState.secondaryList.push_back(0);
     }
 }
 
 void MergeSort(int listSize, int n)
 {
-    CopyArray(0,n);
-    MergeSplit(0,n,false);
+    switch(animationState.sortState)
+    {
+        case(0): //Initialisation
+        {
+            CopyArray(0,n);
+            MergeSplit(0,n,false);
+            animationState.sortState = 1;
+            cout << "end init" << endl;
+            break;
+        }
+        case(1): //Action queue processing
+        {
+            //For the purposes of this sort, the frameValVector will serve as a stack that determines what action will be taken next.
+            //In the future this might be replaced with a delegate structure
+
+            if(size(animationState.frameValVector) == 0) //If there are no more queued actions
+            {
+                animationState.sortState = 3; //ends the iteration
+                break;
+            }
+            else
+            {
+                tuple<int,int,int,bool> actionQueue = animationState.frameValVector.back(); //Get most recent element in stack
+
+                if(get<2>(actionQueue) == -1) //If the third int in the action queue is a negative one, then we are dealing with a merge split - generating more actions
+                {
+                    animationState.frameValVector.pop_back(); //We can now safely delete the top of the stack
+                    MergeSplit(get<0>(actionQueue),get<1>(actionQueue),get<3>(actionQueue));
+                    break;
+                }
+                else //If the stack contains a value in the third int that isnt a -1, a merge iteration call must be done. this is handled in its own sort state
+                {
+                    //The top of the queue is not removed so it can be used in the sort state
+                    animationState.sortState = 2;
+                    //fall through into case 2
+                }
+            }
+        }
+        case(2):
+        {
+            tuple<int,int,int,bool> actionQueue = animationState.frameValVector.back(); //Get most recent element in stack
+            animationState.frameValVector.pop_back();
+
+            IterateMerge(get<0>(actionQueue),get<1>(actionQueue),get<2>(actionQueue),get<3>(actionQueue)); //Run the merge iteration
+
+            animationState.sortState = 1;
+            break;
+        }
+    }
 }
 
 
@@ -726,7 +785,7 @@ int main(int argc,char *argv[])
                 {
                     CheckListIsSorted(listSize);
                     InitialiseText(renderer,&textRect,"Shuffle");
-                    animationState.phase = -1;
+                    animationState.phase = 9;
                     animationState.frame = 0;                    
                     animationState.frameValA = 0;
                     animationState.frameValB = 0;
@@ -760,12 +819,16 @@ int main(int argc,char *argv[])
             }
             case(10):
             {
-                GenerateVector(listSize);
+                if(animationState.frame == 0)
+                {
+                    GenerateVector(listSize);
+                    cout << "vector generated" << endl;
+                }
+
                 MergeSort(listSize,listSize);
                 animationState.frame++;
-                cout << "END";
 
-                if(true) //Run the sort and check if it is finished
+                if(animationState.sortState == 3) //Run the sort and check if it is finished
                 {
                     CheckListIsSorted(listSize);
                     InitialiseText(renderer,&textRect,"Shuffle");
