@@ -30,18 +30,13 @@ SDL_Texture* textTexture;
 SDL_Surface* textSurface;
 SDL_Rect textRect;
 
-bool CheckListIsSorted(int size)
+void CheckListIsSorted(int size)
 {
-    for(int i =0;i<size;i++)
+    if(sortableList[animationState.frameValAnimated] != animationState.frameValAnimated+1)
     {
-        if(sortableList[i] != i+1)
-        {
-            cout << "Check failed at value " << sortableList[i] << " position " << i << " expected " << i + 1 << endl;
-            return false;
-        }
+        cout << "Check failed at value " << sortableList[animationState.frameValAnimated] << " position " << animationState.frameValAnimated << " expected " << animationState.frameValAnimated + 1 << endl;
     }
-    cout << "Passed check" << endl;
-    return true;
+    animationState.frameValAnimated++;
 }
 
 void PopulateList(int size)
@@ -94,10 +89,6 @@ void InsertionSort(int listSize)
                 animationState.frameValAnimated = -1;
                 animationState.sortState = 0;
             }
-            break;
-        }
-        default:
-        {
             break;
         }
     }
@@ -647,9 +638,24 @@ int main(int argc,char *argv[])
 
                 if(animationState.frameValInvisibleA >= listSize) //Run the sort and check if it is finished
                 {
-                    CheckListIsSorted(listSize);
-                    InitialiseText(renderer,&textRect,"Shuffle");
+                    InitialiseText(renderer,&textRect,"Check");
                     animationState.phase = 3;
+                    animationState.frame = 0;                    
+                    animationState.frameValAnimated = 0;               
+                }
+                SDL_Delay(1);
+                break;
+            }
+            case(3):
+            {
+                CheckListIsSorted(listSize);
+                animationState.frame++;
+
+                if(animationState.frameValAnimated >= listSize)
+                {
+                    cout << "end check" << endl;
+                    InitialiseText(renderer,&textRect,"Shuffle");
+                    animationState.phase = 4;
                     animationState.frame = 0;                    
                     animationState.frameValInvisibleA = 0;
                     animationState.frameValAnimated = -1;
@@ -657,12 +663,12 @@ int main(int argc,char *argv[])
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
                     animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;                
+                    animationState.frameValToggle = false;    
                 }
                 SDL_Delay(1);
                 break;
             }
-            case(3):
+            case(4):
             {
                 ShuffleList(listSize);
                 animationState.frame++;
@@ -670,7 +676,7 @@ int main(int argc,char *argv[])
                 if(animationState.frame >= 500)
                 {
                     InitialiseText(renderer,&textRect,"Bubble Sort");
-                    animationState.phase = 4;
+                    animationState.phase = 5;
                     animationState.frame = 0;
                     animationState.frameValInvisibleA = -1;
                     animationState.frameValAnimated = -1;
@@ -683,24 +689,17 @@ int main(int argc,char *argv[])
                 SDL_Delay(5);
                 break;
             }
-            case(4):
+            case(5):
             {
                 BubbleSort(listSize);
                 animationState.frame++;
 
                 if(animationState.frameValToggle == false && animationState.sortState == 0) //Run the sort and check if it is finished
                 {
-                    CheckListIsSorted(listSize);
-                    InitialiseText(renderer,&textRect,"Shuffle");
-                    animationState.phase = 5;
+                    InitialiseText(renderer,&textRect,"Check");
+                    animationState.phase = 6;
                     animationState.frame = 0;                    
-                    animationState.frameValInvisibleA = 0;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = 0;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
+                    animationState.frameValAnimated = 0;   
                 }
 
                 if(animationState.sortState == 1)
@@ -709,35 +708,13 @@ int main(int argc,char *argv[])
                 }
                 break;
             }
-            case(5):
-            {
-                ShuffleList(listSize);
-                animationState.frame++;
-
-                if(animationState.frame >= 500)
-                {
-                    InitialiseText(renderer,&textRect,"Cocktail Shaker Sort");
-                    animationState.phase = 6;
-                    animationState.frame = 0;
-                    animationState.frameValInvisibleA = 0;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = -1;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
-                }
-                SDL_Delay(5);
-                break;
-            }
             case(6):
             {
-                CocktailShakerSort(listSize); 
+                CheckListIsSorted(listSize);
                 animationState.frame++;
 
-                if(animationState.frameValToggle == false && animationState.sortState == 0) //Run the sort and check if it is finished
+                if(animationState.frameValAnimated >= listSize)
                 {
-                    CheckListIsSorted(listSize);
                     InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = 7;
                     animationState.frame = 0;                    
@@ -747,14 +724,9 @@ int main(int argc,char *argv[])
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
                     animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
+                    animationState.frameValToggle = false;  
                 }
-
-                if(animationState.sortState != 0)
-                {
-                    SDL_Delay(1);
-                }
-
+                SDL_Delay(1);
                 break;
             }
             case(7):
@@ -764,10 +736,10 @@ int main(int argc,char *argv[])
 
                 if(animationState.frame >= 500)
                 {
-                    InitialiseText(renderer,&textRect,"Quick Sort");
+                    InitialiseText(renderer,&textRect,"Cocktail Shaker Sort");
                     animationState.phase = 8;
                     animationState.frame = 0;
-                    animationState.frameValInvisibleA = -1;
+                    animationState.frameValInvisibleA = 0;
                     animationState.frameValAnimated = -1;
                     animationState.frameValInvisibleB = -1;
                     animationState.sortState = 0;
@@ -780,15 +752,34 @@ int main(int argc,char *argv[])
             }
             case(8):
             {
-
-                QuickSort(listSize);
+                CocktailShakerSort(listSize); 
                 animationState.frame++;
 
-                if(animationState.sortState == 3) //Run the sort and check if it is finished
+                if(animationState.frameValToggle == false && animationState.sortState == 0) //Run the sort and check if it is finished
                 {
-                    CheckListIsSorted(listSize);
-                    InitialiseText(renderer,&textRect,"Shuffle");
+                    InitialiseText(renderer,&textRect,"Check");
                     animationState.phase = 9;
+                    animationState.frame = 0;                    
+                    animationState.frameValAnimated = 0;   
+
+                }
+
+                if(animationState.sortState != 0)
+                {
+                    SDL_Delay(1);
+                }
+
+                break;
+            }
+            case(9):
+            {
+                CheckListIsSorted(listSize);
+                animationState.frame++;
+
+                if(animationState.frameValAnimated >= listSize)
+                {
+                    InitialiseText(renderer,&textRect,"Shuffle");
+                    animationState.phase = 10;
                     animationState.frame = 0;                    
                     animationState.frameValInvisibleA = 0;
                     animationState.frameValAnimated = -1;
@@ -796,22 +787,21 @@ int main(int argc,char *argv[])
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
                     animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;                
+                    animationState.frameValToggle = false;
                 }
 
                 SDL_Delay(1);
-
                 break;
             }
-            case(9):
+            case(10):
             {
                 ShuffleList(listSize);
                 animationState.frame++;
 
                 if(animationState.frame >= 500)
                 {
-                    InitialiseText(renderer,&textRect,"Merge Sort");
-                    animationState.phase = 10;
+                    InitialiseText(renderer,&textRect,"Quick Sort");
+                    animationState.phase = 11;
                     animationState.frame = 0;
                     animationState.frameValInvisibleA = -1;
                     animationState.frameValAnimated = -1;
@@ -824,7 +814,67 @@ int main(int argc,char *argv[])
                 SDL_Delay(5);
                 break;
             }
-            case(10):
+            case(11):
+            {
+
+                QuickSort(listSize);
+                animationState.frame++;
+
+                if(animationState.sortState == 3) //Run the sort and check if it is finished
+                {
+                    InitialiseText(renderer,&textRect,"Check");
+                    animationState.phase = 12;
+                    animationState.frame = 0;                    
+                    animationState.frameValAnimated = 0;                
+                }
+
+                SDL_Delay(1);
+
+                break;
+            }
+            case(12):
+            {
+                CheckListIsSorted(listSize);
+                animationState.frame++;
+
+                if(animationState.frameValAnimated >= listSize)
+                {
+                    InitialiseText(renderer,&textRect,"Shuffle");
+                    animationState.phase = 13;
+                    animationState.frame = 0;                    
+                    animationState.frameValInvisibleA = 0;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = 0;
+                    animationState.sortState = 0;
+                    animationState.frameValVector.clear();
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
+                }
+                SDL_Delay(1);
+                break;
+            }
+            case(13):
+            {
+                ShuffleList(listSize);
+                animationState.frame++;
+
+                if(animationState.frame >= 500)
+                {
+                    InitialiseText(renderer,&textRect,"Merge Sort");
+                    animationState.phase = 14;
+                    animationState.frame = 0;
+                    animationState.frameValInvisibleA = -1;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = -1;
+                    animationState.sortState = 0;
+                    animationState.frameValVector.clear();
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
+                }
+                SDL_Delay(5);
+                break;
+            }
+            case(14):
             {
                 if(animationState.frame == 0)
                 {
@@ -836,7 +886,23 @@ int main(int argc,char *argv[])
 
                 if(animationState.sortState == 3) //Run the sort and check if it is finished
                 {
-                    CheckListIsSorted(listSize);
+                    InitialiseText(renderer,&textRect,"Check");
+                    animationState.phase = 15;
+                    animationState.frame = 0;                    
+                    animationState.frameValAnimated = 0;                
+                }
+
+                SDL_Delay(1);
+
+                break;
+            }
+            case(15):
+            {
+                CheckListIsSorted(listSize);
+                animationState.frame++;
+
+                if(animationState.frameValAnimated >= listSize)
+                {
                     InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = -1;
                     animationState.frame = 0;                    
@@ -846,11 +912,9 @@ int main(int argc,char *argv[])
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
                     animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;                
+                    animationState.frameValToggle = false;  
                 }
-
                 SDL_Delay(1);
-
                 break;
             }
             default:
