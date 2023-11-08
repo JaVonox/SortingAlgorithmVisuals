@@ -7,7 +7,7 @@ using namespace std;
 
 struct
 {
-    int phase = 0; //Selects which phase of generation the software is currently in
+    int phase = 9; //Selects which phase of generation the software is currently in
     int frame = 0;
 
     //Extra values to store in order to store variables for the sorting algorithms
@@ -304,6 +304,83 @@ void QuickSort(int listSize)
         }
     }
 }
+
+void IterateMerge(int begin, int middle, int end, bool isSwapped)
+{
+    int i = begin;
+    int j = middle;
+
+    if(isSwapped)
+    {
+        for(int k = begin; k< end;k++)
+        {
+            if(i < middle && (j >= end || sortableList[i] <= sortableList[j]))
+            {
+                animationState.frameValVector.at(k) = tuple<int,int>{sortableList[i],0};
+                i++;
+            }
+            else
+            {
+                animationState.frameValVector.at(k) = tuple<int,int>{sortableList[j],0};
+                j++;
+            }
+        }
+    }
+    else
+    {
+        for(int k = begin; k< end;k++)
+        {
+            if(i < middle && (j >= end || animationState.frameValVector.at(i) <= animationState.frameValVector.at(j)))
+            {
+                sortableList[k] = get<0>(animationState.frameValVector.at(i));
+                i++;
+            }
+            else
+            {
+                sortableList[k] = get<0>(animationState.frameValVector.at(j));
+                j++;
+            }
+        }
+    }
+}
+
+void CopyArray(int begin, int end)
+{
+    for(int i = begin; i<end;i++)
+    {
+        animationState.frameValVector.at(i) = tuple<int,int>{sortableList[i],0};
+    }
+}
+
+void MergeSplit(int begin, int end, bool isSwapped) //is Swapped tells the code if the arrays should be swapped in the next function call
+{
+    if(end - begin <= 1)
+    {
+        return;
+    }
+
+    int middle = (end + begin) /2;
+
+    MergeSplit(begin,middle,!isSwapped);
+    MergeSplit(middle,end,!isSwapped);
+    IterateMerge(begin, middle, end, isSwapped);
+
+}
+
+void GenerateVector(int listSize)
+{
+    for(int i = 0; i<listSize;i++)
+    {
+        animationState.frameValVector.push_back(tuple<int,int>{0,0});
+    }
+}
+
+void MergeSort(int listSize, int n)
+{
+    CopyArray(0,n);
+    MergeSplit(0,n,false);
+}
+
 
 void DrawList(int listSize, SDL_Renderer *renderer)
 {
@@ -646,6 +723,49 @@ int main(int argc,char *argv[])
                 animationState.frame++;
 
                 if(animationState.sortState == 3) //Run the sort and check if it is finished
+                {
+                    CheckListIsSorted(listSize);
+                    InitialiseText(renderer,&textRect,"Shuffle");
+                    animationState.phase = -1;
+                    animationState.frame = 0;                    
+                    animationState.frameValA = 0;
+                    animationState.frameValB = 0;
+                    animationState.sortState = 0;
+                    animationState.frameValVector.clear();
+                    animationState.frameValBool = false;                
+                }
+
+                SDL_Delay(1);
+
+                break;
+            }
+            case(9):
+            {
+                ShuffleList(listSize);
+                animationState.frame++;
+
+                if(animationState.frame >= 500)
+                {
+                    InitialiseText(renderer,&textRect,"Merge Sort");
+                    animationState.phase = 10;
+                    animationState.frame = 0;
+                    animationState.frameValA = -1;
+                    animationState.frameValB = -1;
+                    animationState.sortState = 0;
+                    animationState.frameValVector.clear();
+                    animationState.frameValBool = false;
+                }
+                SDL_Delay(5);
+                break;
+            }
+            case(10):
+            {
+                GenerateVector(listSize);
+                MergeSort(listSize,listSize);
+                animationState.frame++;
+                cout << "END";
+
+                if(true) //Run the sort and check if it is finished
                 {
                     CheckListIsSorted(listSize);
                     InitialiseText(renderer,&textRect,"Shuffle");
