@@ -7,13 +7,14 @@ using namespace std;
 
 struct
 {
-    int phase = 9; //Selects which phase of generation the software is currently in
+    int phase = 0; //Selects which phase of generation the software is currently in
     int frame = 0;
 
     //Extra values to store in order to store variables for the sorting algorithms
-    int frameValA = -1;
-    int frameValB = -1;
-    bool frameValBool = false;
+    int frameValInvisibleA = -1;
+    int frameValAnimated = -1;
+    int frameValInvisibleB = -1;
+    bool frameValToggle = false;
     vector<int> secondaryList = {}; //Used for storing single value items
     vector<tuple<int,int,int,bool>> frameValVector = {};
 
@@ -67,30 +68,30 @@ void InsertionSort(int listSize)
     {
         case(0): //sortState 0 is the state when looking for the next value to pass backwards
         {
-            if(animationState.frameValA > 0 && sortableList[animationState.frameValA-1] > sortableList[animationState.frameValA]) 
+            if(animationState.frameValInvisibleA > 0 && sortableList[animationState.frameValInvisibleA-1] > sortableList[animationState.frameValInvisibleA]) 
             {
 
-                animationState.frameValB = animationState.frameValA;
+                animationState.frameValAnimated = animationState.frameValInvisibleA;
                 animationState.sortState = 1;
             }
             else
             {
-                animationState.frameValA = animationState.frameValA + 1;
+                animationState.frameValInvisibleA = animationState.frameValInvisibleA + 1;
             }
             break;
         }
         case(1): //sortState 1 is when the value is being passed backwards
         {
-            if(animationState.frameValB > 0 && sortableList[animationState.frameValB-1] > sortableList[animationState.frameValB]) 
+            if(animationState.frameValAnimated > 0 && sortableList[animationState.frameValAnimated-1] > sortableList[animationState.frameValAnimated]) 
             {
-                int swapVal = sortableList[animationState.frameValB];
-                sortableList[animationState.frameValB] = sortableList[animationState.frameValB-1];
-                sortableList[animationState.frameValB-1] = swapVal;
-                animationState.frameValB--;
+                int swapVal = sortableList[animationState.frameValAnimated];
+                sortableList[animationState.frameValAnimated] = sortableList[animationState.frameValAnimated-1];
+                sortableList[animationState.frameValAnimated-1] = swapVal;
+                animationState.frameValAnimated--;
             }
             else
             {
-                animationState.frameValB = -1;
+                animationState.frameValAnimated = -1;
                 animationState.sortState = 0;
             }
             break;
@@ -108,25 +109,25 @@ void BubbleSort(int listSize)
     {
         case(0): //State 0 is before the system loops
         {   
-            animationState.frameValBool = false;
+            animationState.frameValToggle = false;
             animationState.sortState = 1;
-            animationState.frameValB = 1;
-            animationState.frameValA++;
+            animationState.frameValAnimated = 1;
+            animationState.frameValInvisibleA++;
             break;
         }
         case(1): //State 1 is when the loop occurs
         {
             
-            if(animationState.frameValB <= (listSize - animationState.frameValA) - 1)
+            if(animationState.frameValAnimated <= (listSize - animationState.frameValInvisibleA) - 1)
             {
-                if(sortableList[animationState.frameValB - 1] > sortableList[animationState.frameValB])
+                if(sortableList[animationState.frameValAnimated - 1] > sortableList[animationState.frameValAnimated])
                 {
-                    int swapVal = sortableList[animationState.frameValB];
-                    sortableList[animationState.frameValB] = sortableList[animationState.frameValB-1];
-                    sortableList[animationState.frameValB-1] = swapVal;
-                    animationState.frameValBool = true;
+                    int swapVal = sortableList[animationState.frameValAnimated];
+                    sortableList[animationState.frameValAnimated] = sortableList[animationState.frameValAnimated-1];
+                    sortableList[animationState.frameValAnimated-1] = swapVal;
+                    animationState.frameValToggle = true;
                 }
-                animationState.frameValB++;
+                animationState.frameValAnimated++;
             }
             else
             {
@@ -143,31 +144,31 @@ void CocktailShakerSort(int listSize)
     {
         case(0): //Initialisation
         {   
-            animationState.frameValBool = false;
-            animationState.frameValB = animationState.frameValA < 1 ? 1 : animationState.frameValA;
-            animationState.frameValA++;
+            animationState.frameValToggle = false;
+            animationState.frameValAnimated = animationState.frameValInvisibleA < 1 ? 1 : animationState.frameValInvisibleA;
+            animationState.frameValInvisibleA++;
             animationState.sortState = 1;
             break;
         }
         case(1): //First loop
         {
             
-            if(animationState.frameValB <= (listSize - animationState.frameValA))
+            if(animationState.frameValAnimated <= (listSize - animationState.frameValInvisibleA))
             {
-                if(sortableList[animationState.frameValB - 1] > sortableList[animationState.frameValB])
+                if(sortableList[animationState.frameValAnimated - 1] > sortableList[animationState.frameValAnimated])
                 {
-                    int swapVal = sortableList[animationState.frameValB];
-                    sortableList[animationState.frameValB] = sortableList[animationState.frameValB-1];
-                    sortableList[animationState.frameValB-1] = swapVal;
-                    animationState.frameValBool = true;
+                    int swapVal = sortableList[animationState.frameValAnimated];
+                    sortableList[animationState.frameValAnimated] = sortableList[animationState.frameValAnimated-1];
+                    sortableList[animationState.frameValAnimated-1] = swapVal;
+                    animationState.frameValToggle = true;
                 }
-                animationState.frameValB++;
+                animationState.frameValAnimated++;
             }
             else
             {
-                if(animationState.frameValBool) //Enter backwards loop
+                if(animationState.frameValToggle) //Enter backwards loop
                 {
-                    animationState.frameValB = (listSize - animationState.frameValA);
+                    animationState.frameValAnimated = (listSize - animationState.frameValInvisibleA);
                     animationState.sortState = 2;
                 }
                 else
@@ -179,16 +180,16 @@ void CocktailShakerSort(int listSize)
         }
         case(2): //Second loop
         {
-            if(animationState.frameValB > animationState.frameValA)
+            if(animationState.frameValAnimated > animationState.frameValInvisibleA)
             {
-                if(sortableList[animationState.frameValB - 1] > sortableList[animationState.frameValB])
+                if(sortableList[animationState.frameValAnimated - 1] > sortableList[animationState.frameValAnimated])
                 {
-                    int swapVal = sortableList[animationState.frameValB];
-                    sortableList[animationState.frameValB] = sortableList[animationState.frameValB-1];
-                    sortableList[animationState.frameValB-1] = swapVal;
-                    animationState.frameValBool = true;
+                    int swapVal = sortableList[animationState.frameValAnimated];
+                    sortableList[animationState.frameValAnimated] = sortableList[animationState.frameValAnimated-1];
+                    sortableList[animationState.frameValAnimated-1] = swapVal;
+                    animationState.frameValToggle = true;
                 }
-                animationState.frameValB--;
+                animationState.frameValAnimated--;
             }
             else
             {
@@ -201,37 +202,37 @@ void CocktailShakerSort(int listSize)
 
 int QuickSortPartition(int low, int high) //returns the new pivot index
 {
-    if(animationState.frameValA == -1 && animationState.frameValB == -1) //On any first run of this, initialise the frame values
+    if(animationState.frameValInvisibleA == -1 && animationState.frameValAnimated == -1) //On any first run of this, initialise the frame values
     {
-        animationState.frameValBool = false; //Indication that the sorting has not yet concluded
-        animationState.frameValA = low - 1;
-        animationState.frameValB = low;
+        animationState.frameValToggle = false; //Indication that the sorting has not yet concluded
+        animationState.frameValInvisibleA = low - 1;
+        animationState.frameValAnimated = low;
     }
 
-    if(animationState.frameValB < high) //Loop through until frame b becomes greater than or equal to the high value
+    if(animationState.frameValAnimated < high) //Loop through until frame b becomes greater than or equal to the high value
     {
-        if(sortableList[animationState.frameValB] <= sortableList[high])
+        if(sortableList[animationState.frameValAnimated] <= sortableList[high])
         {
-            animationState.frameValA++;
+            animationState.frameValInvisibleA++;
 
             //swap values
 
-            int swapVal = sortableList[animationState.frameValA];
-            sortableList[animationState.frameValA] = sortableList[animationState.frameValB];
-            sortableList[animationState.frameValB] = swapVal;
+            int swapVal = sortableList[animationState.frameValInvisibleA];
+            sortableList[animationState.frameValInvisibleA] = sortableList[animationState.frameValAnimated];
+            sortableList[animationState.frameValAnimated] = swapVal;
         }
 
-        animationState.frameValB++;
+        animationState.frameValAnimated++;
         return -1;
     }
     else
     {
-        int swapVal = sortableList[animationState.frameValA+1];
-        sortableList[animationState.frameValA+1] = sortableList[high];
+        int swapVal = sortableList[animationState.frameValInvisibleA+1];
+        sortableList[animationState.frameValInvisibleA+1] = sortableList[high];
         sortableList[high] = swapVal;
 
-        animationState.frameValBool = true;
-        return animationState.frameValA + 1;
+        animationState.frameValToggle = true;
+        return animationState.frameValInvisibleA + 1;
     }
 
 }
@@ -244,7 +245,7 @@ void QuickSort(int listSize)
         case(0): //Initialisation
         {
             int partIndex = QuickSortPartition(0,listSize-1);
-            if(animationState.frameValBool) //When the partition has finished
+            if(animationState.frameValToggle) //When the partition has finished
             {
                 animationState.frameValVector.push_back({0,partIndex-1,0,0}); //Push in left pivot
                 animationState.frameValVector.push_back({partIndex+1,listSize-1,0,0}); //Push in right pivot
@@ -255,9 +256,9 @@ void QuickSort(int listSize)
         case(1): //Iteration
         {
             //Reset some important values
-            animationState.frameValA = -1;
-            animationState.frameValB = -1;
-            animationState.frameValBool = false;
+            animationState.frameValInvisibleA = -1;
+            animationState.frameValAnimated = -1;
+            animationState.frameValToggle = false;
 
             if(size(animationState.frameValVector) > 0)
             {
@@ -292,10 +293,10 @@ void QuickSort(int listSize)
 
             int nPartIndex = QuickSortPartition(nLow,nHigh);
 
-            if(animationState.frameValBool) //When the code for the partition ends, this will run and push new values back into the list
+            if(animationState.frameValToggle) //When the code for the partition ends, this will run and push new values back into the list
             {
-                animationState.frameValA = -1;
-                animationState.frameValB = -1;
+                animationState.frameValInvisibleA = -1;
+                animationState.frameValAnimated = -1;
                 animationState.frameValVector.pop_back(); //Removes the back element when it is no longer needed
                 animationState.frameValVector.push_back({nLow,nPartIndex-1,0,0}); //Push in left pivot
                 animationState.frameValVector.push_back({nPartIndex+1,nHigh,0,0}); //Push in right pivot
@@ -309,44 +310,57 @@ void QuickSort(int listSize)
 
 void IterateMerge(int begin, int middle, int end, bool isSwapped)
 {
-    int i = begin;
-    int j = middle;
-
-    if(isSwapped)
+    if(animationState.frameValToggle == false) //If list is being initialised
     {
-        for(int k = begin; k< end;k++)
+        animationState.frameValInvisibleA = begin; //i
+        animationState.frameValAnimated = middle; //j
+        animationState.frameValInvisibleB = begin; //k
+        animationState.frameValToggle = true; //Reset frameValToggle
+    }
+
+    if(animationState.frameValInvisibleB< end)
+    {
+        if(isSwapped)
         {
-            if(i < middle && (j >= end || sortableList[i] <= sortableList[j]))
+            if(animationState.frameValInvisibleA < middle && (animationState.frameValAnimated >= end || sortableList[animationState.frameValInvisibleA] <= sortableList[animationState.frameValAnimated]))
             {
-                animationState.secondaryList.at(k) = sortableList[i];
-                i++;
+                animationState.secondaryList.at(animationState.frameValInvisibleB) = sortableList[animationState.frameValInvisibleA];
+                animationState.frameValInvisibleA++;
             }
             else
             {
-                animationState.secondaryList.at(k) = sortableList[j];
-                j++;
+                animationState.secondaryList.at(animationState.frameValInvisibleB) = sortableList[animationState.frameValAnimated];
+                animationState.frameValAnimated++;
             }
+
+            animationState.frameValInvisibleB++;
         }
-        cout << "Swapped loop ends" << endl;
+        else
+        {
+            if(animationState.frameValInvisibleA < middle && (animationState.frameValAnimated >= end || animationState.secondaryList.at(animationState.frameValInvisibleA) <= animationState.secondaryList.at(animationState.frameValAnimated)))
+            {
+                sortableList[animationState.frameValInvisibleB] = animationState.secondaryList.at(animationState.frameValInvisibleA);
+                animationState.frameValInvisibleA++;
+            }
+            else
+            {
+                sortableList[animationState.frameValInvisibleB] = animationState.secondaryList.at(animationState.frameValAnimated);
+                animationState.frameValAnimated++;
+            }
+
+            animationState.frameValInvisibleB++;
+        }
     }
     else
     {
-        for(int k = begin; k< end;k++)
-        {
-            if(i < middle && (j >= end || animationState.secondaryList.at(i) <= animationState.secondaryList.at(j)))
-            {
-                sortableList[k] = animationState.secondaryList.at(i);
-                i++;
-            }
-            else
-            {
-                sortableList[k] = animationState.secondaryList.at(j);
-                j++;
-            }
-        }
-
-        cout << "Not swapped loop ends" << endl;
+        animationState.sortState = 1;
+        animationState.frameValInvisibleA = -1;
+        animationState.frameValAnimated = -1;
+        animationState.frameValInvisibleB = -1;
+        animationState.frameValToggle = false;
+        animationState.frameValVector.pop_back();
     }
+
 }
 
 void CopyArray(int begin, int end)
@@ -396,7 +410,6 @@ void MergeSort(int listSize, int n)
             CopyArray(0,n);
             MergeSplit(0,n,false);
             animationState.sortState = 1;
-            cout << "end init" << endl;
             break;
         }
         case(1): //Action queue processing
@@ -423,6 +436,7 @@ void MergeSort(int listSize, int n)
                 {
                     //The top of the queue is not removed so it can be used in the sort state
                     animationState.sortState = 2;
+                    animationState.frameValToggle = false;
                     //fall through into case 2
                 }
             }
@@ -430,11 +444,8 @@ void MergeSort(int listSize, int n)
         case(2):
         {
             tuple<int,int,int,bool> actionQueue = animationState.frameValVector.back(); //Get most recent element in stack
-            animationState.frameValVector.pop_back();
 
             IterateMerge(get<0>(actionQueue),get<1>(actionQueue),get<2>(actionQueue),get<3>(actionQueue)); //Run the merge iteration
-
-            animationState.sortState = 1;
             break;
         }
     }
@@ -500,36 +511,12 @@ void DrawList(int listSize, SDL_Renderer *renderer)
             blueVal = xVal;
         }
 
-        if(i == animationState.frameValA || i == animationState.frameValB)
+        if(i==animationState.frameValAnimated)
         {
-            switch(animationState.phase)
-            {
-                case(2): //Insertion sort - both A and B are white - currently defaults to only B white to do appearance testing
-                //{
-                //    redVal = 1.0f;
-                //    greenVal = 1.0f;
-                //    blueVal = 1.0f;
-                //    mVal = 0.0f;
-                //    break;
-                //}
-                case(4): //Bubble sort - only B is white - falls through
-                case(6): //Cocktail shaker sort - only B is white
-                case(8): //Quicksort - only B is white
-                {
-                    if(i==animationState.frameValB)
-                    {
-                        redVal = 1.0f;
-                        greenVal = 1.0f;
-                        blueVal = 1.0f;
-                        mVal = 0.0f;
-                    }
-                    break;
-                }
-                default:
-                {
-                    break;
-                }
-            }
+            redVal = 1.0f;
+            greenVal = 1.0f;
+            blueVal = 1.0f;
+            mVal = 0.0f;
         }
 
         SDL_SetRenderDrawColor(renderer,(redVal + mVal) * 255,(greenVal + mVal) * 255,(blueVal + mVal) * 255,255);
@@ -618,14 +605,16 @@ int main(int argc,char *argv[])
                 animationState.frame++;
                 if(animationState.frame >= 500)
                 {
-                    InitialiseText(renderer,&textRect,"Shuffling");
+                    InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = 1;
                     animationState.frame = 0;
-                    animationState.frameValA = 1;
-                    animationState.frameValB = 0;
+                    animationState.frameValInvisibleA = 1;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = 0;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.frameValBool = false;
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
                 }
                 SDL_Delay(5);
                 break;
@@ -640,11 +629,13 @@ int main(int argc,char *argv[])
                     InitialiseText(renderer,&textRect,"Insertion Sort");
                     animationState.phase = 2;
                     animationState.frame = 0;
-                    animationState.frameValA = 0;
-                    animationState.frameValB = 0;
+                    animationState.frameValInvisibleA = 0;
+                    animationState.frameValAnimated = 0;
+                    animationState.frameValInvisibleB = 0;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.frameValBool = false;
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
                 }
                 SDL_Delay(5);
                 break;
@@ -654,17 +645,19 @@ int main(int argc,char *argv[])
                 InsertionSort(listSize);
                 animationState.frame++;
 
-                if(animationState.frameValA >= listSize) //Run the sort and check if it is finished
+                if(animationState.frameValInvisibleA >= listSize) //Run the sort and check if it is finished
                 {
                     CheckListIsSorted(listSize);
                     InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = 3;
                     animationState.frame = 0;                    
-                    animationState.frameValA = 0;
-                    animationState.frameValB = 0;
+                    animationState.frameValInvisibleA = 0;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = 0;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.frameValBool = false;                
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;                
                 }
                 SDL_Delay(1);
                 break;
@@ -679,11 +672,13 @@ int main(int argc,char *argv[])
                     InitialiseText(renderer,&textRect,"Bubble Sort");
                     animationState.phase = 4;
                     animationState.frame = 0;
-                    animationState.frameValA = -1;
-                    animationState.frameValB = -1;
+                    animationState.frameValInvisibleA = -1;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = -1;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.frameValBool = false;
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
                 }
                 SDL_Delay(5);
                 break;
@@ -693,17 +688,19 @@ int main(int argc,char *argv[])
                 BubbleSort(listSize);
                 animationState.frame++;
 
-                if(animationState.frameValBool == false && animationState.sortState == 0) //Run the sort and check if it is finished
+                if(animationState.frameValToggle == false && animationState.sortState == 0) //Run the sort and check if it is finished
                 {
                     CheckListIsSorted(listSize);
                     InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = 5;
                     animationState.frame = 0;                    
-                    animationState.frameValA = 0;
-                    animationState.frameValB = 0;
+                    animationState.frameValInvisibleA = 0;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = 0;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.frameValBool = false;
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
                 }
 
                 if(animationState.sortState == 1)
@@ -722,11 +719,13 @@ int main(int argc,char *argv[])
                     InitialiseText(renderer,&textRect,"Cocktail Shaker Sort");
                     animationState.phase = 6;
                     animationState.frame = 0;
-                    animationState.frameValA = 0;
-                    animationState.frameValB = -1;
+                    animationState.frameValInvisibleA = 0;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = -1;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.frameValBool = false;
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
                 }
                 SDL_Delay(5);
                 break;
@@ -736,17 +735,19 @@ int main(int argc,char *argv[])
                 CocktailShakerSort(listSize); 
                 animationState.frame++;
 
-                if(animationState.frameValBool == false && animationState.sortState == 0) //Run the sort and check if it is finished
+                if(animationState.frameValToggle == false && animationState.sortState == 0) //Run the sort and check if it is finished
                 {
                     CheckListIsSorted(listSize);
                     InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = 7;
                     animationState.frame = 0;                    
-                    animationState.frameValA = 0;
-                    animationState.frameValB = 0;
+                    animationState.frameValInvisibleA = 0;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = 0;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.frameValBool = false;
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
                 }
 
                 if(animationState.sortState != 0)
@@ -766,11 +767,13 @@ int main(int argc,char *argv[])
                     InitialiseText(renderer,&textRect,"Quick Sort");
                     animationState.phase = 8;
                     animationState.frame = 0;
-                    animationState.frameValA = -1;
-                    animationState.frameValB = -1;
+                    animationState.frameValInvisibleA = -1;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = -1;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.frameValBool = false;
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
                 }
                 SDL_Delay(5);
                 break;
@@ -787,11 +790,13 @@ int main(int argc,char *argv[])
                     InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = 9;
                     animationState.frame = 0;                    
-                    animationState.frameValA = 0;
-                    animationState.frameValB = 0;
+                    animationState.frameValInvisibleA = 0;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = 0;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.frameValBool = false;                
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;                
                 }
 
                 SDL_Delay(1);
@@ -808,11 +813,13 @@ int main(int argc,char *argv[])
                     InitialiseText(renderer,&textRect,"Merge Sort");
                     animationState.phase = 10;
                     animationState.frame = 0;
-                    animationState.frameValA = -1;
-                    animationState.frameValB = -1;
+                    animationState.frameValInvisibleA = -1;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = -1;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.frameValBool = false;
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
                 }
                 SDL_Delay(5);
                 break;
@@ -822,7 +829,6 @@ int main(int argc,char *argv[])
                 if(animationState.frame == 0)
                 {
                     GenerateVector(listSize);
-                    cout << "vector generated" << endl;
                 }
 
                 MergeSort(listSize,listSize);
@@ -834,11 +840,13 @@ int main(int argc,char *argv[])
                     InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = -1;
                     animationState.frame = 0;                    
-                    animationState.frameValA = 0;
-                    animationState.frameValB = 0;
+                    animationState.frameValInvisibleA = 0;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = 0;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.frameValBool = false;                
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;                
                 }
 
                 SDL_Delay(1);
