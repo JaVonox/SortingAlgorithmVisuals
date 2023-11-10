@@ -8,7 +8,7 @@ using namespace std;
 
 struct
 {
-    int phase = 16; //Selects which phase of generation the software is currently in
+    int phase = 0; //Selects which phase of generation the software is currently in
     int frame = 0;
 
     //Extra values to store in order to store variables for the sorting algorithms
@@ -443,49 +443,103 @@ void MergeSort(int listSize, int n)
     }
 }
 
-void CountingSort(int listSize, int exponent)
-{
-    int output[listSize] = {};
-
-    int count[10] = {};
-
-    for(int i=0; i < listSize;i++)
-    {
-        int index = floor((float)(sortableList[i])/ (float)(exponent)); 
-        count[index%10] +=1;
-    }
-
-    for(int i=1; i < 10;i++)
-    {
-        count[i] += count[i-1];
-    }
-
-    int i = listSize -1;
-
-    while(i >= 0)
-    {
-        int index = floor((float)(sortableList[i])/ (float)(exponent));
-        output[count[index%10]-1] = sortableList[i];
-        count[index % 10] -= 1;
-        i -=1;
-    }
-
-    for(int j=0; j <listSize;j++)
-    {
-        sortableList[j]  = output[j];
-    }
-
-}
-
 void RadixSort(int listSize)
 {
-    int exponent = 1;
-
-    for(int digits=3;digits >= 1;digits--) //Make one loop for each digit
+    switch(animationState.sortState)
     {
-        CountingSort(listSize,exponent);
-        exponent *= 10;
+        case(0): //initialisation
+        {
+            for(int i=0;i<listSize;i++)
+            {
+                animationState.secondaryList.push_back(sortableList[i]); //Make a temporary copy of the sortable list
+            }
+
+            for(int i =0;i<10;i++)
+            {
+                animationState.frameValVector.push_back(tuple<int,int,int,bool>(0,0,0,0));
+            }
+            animationState.sortState = 1;
+            animationState.frameValAnimated = 0;
+            animationState.frameValInvisibleA = 1; //Invisible A stores the value of the current exponent
+            animationState.frameValInvisibleB = 3; //Invisible B stores the current digit count
+            break;
+        }
+        case(1): //Reset the count of each digit list
+        {
+            for(int i =0;i<10;i++)
+            {
+                animationState.frameValVector[i] = tuple<int,int,int,bool>(0,0,0,0);
+            }
+
+            animationState.sortState = 2;
+            //Allow fall through into the next process
+        }
+        case(2): //Count up the digit value for each item on the current exponent
+        {
+            if(animationState.frameValAnimated < listSize)
+            {
+                int index = floor((float)(animationState.secondaryList[animationState.frameValAnimated])/ (float)(animationState.frameValInvisibleA)); 
+
+                //Increment the count of each digit
+                int currentCount = get<0>(animationState.frameValVector[index%10]);
+                animationState.frameValVector[index%10] = tuple<int,int,int,bool>(currentCount+1,0,0,0);
+
+                animationState.frameValAnimated++;
+            }
+            else
+            {
+                for(int i=1;i<10;i++) //Reprocess framevalvector array
+                {
+                    int currentCount = get<0>(animationState.frameValVector[i]);
+                    int prevCount = get<0>(animationState.frameValVector[i-1]);
+
+                    animationState.frameValVector[i] = tuple<int,int,int,bool>(currentCount+prevCount,0,0,0);
+                }
+
+                animationState.frameValAnimated = listSize-1;
+                animationState.sortState =3;
+            }
+
+            
+            break;
+        }
+        case(3):
+        {
+            if(animationState.frameValAnimated >= 0)
+            {
+                int index = floor((float)(animationState.secondaryList[animationState.frameValAnimated])/ (float)(animationState.frameValInvisibleA)); 
+                
+                int indexToModify = (get<0>(animationState.frameValVector[index % 10]));
+                sortableList[indexToModify - 1] = animationState.secondaryList[animationState.frameValAnimated];
+                animationState.frameValVector[index % 10] = tuple<int,int,int,bool>(indexToModify-1,0,0,0);
+                animationState.frameValAnimated -=1;
+            }
+            else
+            {
+                animationState.frameValAnimated =0;
+                animationState.sortState = 4;
+            }
+            break;
+        }
+        case(4):
+        {
+            if(animationState.frameValAnimated < listSize)
+            {
+                animationState.secondaryList[animationState.frameValAnimated] = sortableList[animationState.frameValAnimated];
+                animationState.frameValAnimated++;
+            }
+            else
+            {
+                animationState.frameValAnimated = 0;
+                animationState.sortState = 1;
+                animationState.frameValInvisibleB--;
+                animationState.frameValInvisibleA *=10;
+            }
+            break;
+        }
+        
     }
+    
 }
 
 void DrawList(int listSize, SDL_Renderer *renderer)
@@ -968,7 +1022,7 @@ int main(int argc,char *argv[])
 
                 if(animationState.frame >= 500)
                 {
-                    InitialiseText(renderer,&textRect,"Radix Sort");
+                    InitialiseText(renderer,&textRect,"Radix Sort (LSD)");
                     animationState.phase = 17;
                     animationState.frame = 0;
                     animationState.frameValInvisibleA = -1;
@@ -987,16 +1041,15 @@ int main(int argc,char *argv[])
                 RadixSort(listSize);
                 animationState.frame++;
 
-                
-                SDL_Delay(1);
-                if(true)
+                if(animationState.frameValInvisibleB <= 0)
                 {
                     InitialiseText(renderer,&textRect,"Check");
-                    animationState.phase = 15;
+                    animationState.phase = 18;
                     animationState.frame = 0;                    
                     animationState.frameValAnimated = 0;                
                 }
 
+                SDL_Delay(1);
                 break;
             }
             case(18):
