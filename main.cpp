@@ -3,11 +3,12 @@
 #include <vector>
 #include <math.h>
 #include <SDL2/SDL_ttf.h>
+
 using namespace std;
 
 struct
 {
-    int phase = 0; //Selects which phase of generation the software is currently in
+    int phase = 16; //Selects which phase of generation the software is currently in
     int frame = 0;
 
     //Extra values to store in order to store variables for the sorting algorithms
@@ -442,6 +443,50 @@ void MergeSort(int listSize, int n)
     }
 }
 
+void CountingSort(int listSize, int exponent)
+{
+    int output[listSize] = {};
+
+    int count[10] = {};
+
+    for(int i=0; i < listSize;i++)
+    {
+        int index = floor((float)(sortableList[i])/ (float)(exponent)); 
+        count[index%10] +=1;
+    }
+
+    for(int i=1; i < 10;i++)
+    {
+        count[i] += count[i-1];
+    }
+
+    int i = listSize -1;
+
+    while(i >= 0)
+    {
+        int index = floor((float)(sortableList[i])/ (float)(exponent));
+        output[count[index%10]-1] = sortableList[i];
+        count[index % 10] -= 1;
+        i -=1;
+    }
+
+    for(int j=0; j <listSize;j++)
+    {
+        sortableList[j]  = output[j];
+    }
+
+}
+
+void RadixSort(int listSize)
+{
+    int exponent = 1;
+
+    for(int digits=3;digits >= 1;digits--) //Make one loop for each digit
+    {
+        CountingSort(listSize,exponent);
+        exponent *= 10;
+    }
+}
 
 void DrawList(int listSize, SDL_Renderer *renderer)
 {
@@ -653,7 +698,6 @@ int main(int argc,char *argv[])
 
                 if(animationState.frameValAnimated >= listSize)
                 {
-                    cout << "end check" << endl;
                     InitialiseText(renderer,&textRect,"Shuffle");
                     animationState.phase = 4;
                     animationState.frame = 0;                    
@@ -904,7 +948,7 @@ int main(int argc,char *argv[])
                 if(animationState.frameValAnimated >= listSize)
                 {
                     InitialiseText(renderer,&textRect,"Shuffle");
-                    animationState.phase = -1;
+                    animationState.phase = 16;
                     animationState.frame = 0;                    
                     animationState.frameValInvisibleA = 0;
                     animationState.frameValAnimated = -1;
@@ -913,6 +957,65 @@ int main(int argc,char *argv[])
                     animationState.frameValVector.clear();
                     animationState.secondaryList.clear();
                     animationState.frameValToggle = false;  
+                }
+                SDL_Delay(1);
+                break;
+            }
+            case(16):
+            {
+                ShuffleList(listSize);
+                animationState.frame++;
+
+                if(animationState.frame >= 500)
+                {
+                    InitialiseText(renderer,&textRect,"Radix Sort");
+                    animationState.phase = 17;
+                    animationState.frame = 0;
+                    animationState.frameValInvisibleA = -1;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = -1;
+                    animationState.sortState = 0;
+                    animationState.frameValVector.clear();
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
+                }
+                SDL_Delay(5);
+                break;
+            }
+            case(17):
+            {
+                RadixSort(listSize);
+                animationState.frame++;
+
+                
+                SDL_Delay(1);
+                if(true)
+                {
+                    InitialiseText(renderer,&textRect,"Check");
+                    animationState.phase = 15;
+                    animationState.frame = 0;                    
+                    animationState.frameValAnimated = 0;                
+                }
+
+                break;
+            }
+            case(18):
+            {
+                CheckListIsSorted(listSize);
+                animationState.frame++;
+
+                if(animationState.frameValAnimated >= listSize)
+                {
+                    InitialiseText(renderer,&textRect,"Shuffle");
+                    animationState.phase = -1;
+                    animationState.frame = 0;                    
+                    animationState.frameValInvisibleA = 0;
+                    animationState.frameValAnimated = -1;
+                    animationState.frameValInvisibleB = 0;
+                    animationState.sortState = 0;
+                    animationState.frameValVector.clear();
+                    animationState.secondaryList.clear();
+                    animationState.frameValToggle = false;
                 }
                 SDL_Delay(1);
                 break;
