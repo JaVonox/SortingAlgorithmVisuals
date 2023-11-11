@@ -13,7 +13,7 @@ struct
 
     //Extra values to store in order to store variables for the sorting algorithms
     int frameValInvisibleA = -1;
-    int frameValAnimated = -1;
+    int frameValAnimated = 0;
     int frameValInvisibleB = -1;
     bool frameValToggle = false;
     vector<int> secondaryList = {}; //Used for storing single value items
@@ -687,395 +687,224 @@ int main(int argc,char *argv[])
             SDL_Delay(1500);
         }
 
-        switch(animationState.phase)
+        if(!((animationState.phase - 2) % 3==0)) //If not in a sorting animationstate. each sorting phase occurs on (x-2) % 3 == 0
         {
+            //only valid inputs should be 1 and 2
 
-            case(0):
-            {
-                animationState.frame++;
-                if(animationState.frame >= 500)
-                {
-                    InitialiseText(renderer,&textRect,"Shuffle");
-                    animationState.phase = 1;
-                    animationState.frame = 0;
-                    animationState.frameValInvisibleA = 1;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = 0;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
-                }
-                SDL_Delay(5);
-                break;
-            }
-            case(1):
-            {
-                ShuffleList(listSize);
-                animationState.frame++;
-
-                if(animationState.frame >= 500)
-                {
-                    InitialiseText(renderer,&textRect,"Insertion Sort");
-                    animationState.phase = 2;
-                    animationState.frame = 0;
-                    animationState.frameValInvisibleA = 0;
-                    animationState.frameValAnimated = 0;
-                    animationState.frameValInvisibleB = 0;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
-                }
-                SDL_Delay(5);
-                break;
-            }
-            case(2):
-            {
-                InsertionSort(listSize);
-                animationState.frame++;
-
-                if(animationState.frameValInvisibleA >= listSize) //Run the sort and check if it is finished
-                {
-                    InitialiseText(renderer,&textRect,"Check");
-                    animationState.phase = 3;
-                    animationState.frame = 0;                    
-                    animationState.frameValAnimated = 0;               
-                }
-                SDL_Delay(1);
-                break;
-            }
-            case(3):
-            {
-                CheckListIsSorted(listSize);
-                animationState.frame++;
-
-                if(animationState.frameValAnimated >= listSize)
-                {
-                    InitialiseText(renderer,&textRect,"Shuffle");
-                    animationState.phase = 4;
-                    animationState.frame = 0;                    
-                    animationState.frameValInvisibleA = 0;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = 0;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;    
-                }
-                SDL_Delay(1);
-                break;
-            }
-            case(4):
-            {
-                ShuffleList(listSize);
-                animationState.frame++;
-
-                if(animationState.frame >= 500)
-                {
-                    InitialiseText(renderer,&textRect,"Bubble Sort");
-                    animationState.phase = 5;
-                    animationState.frame = 0;
-                    animationState.frameValInvisibleA = -1;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = -1;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
-                }
-                SDL_Delay(5);
-                break;
-            }
-            case(5):
-            {
-                BubbleSort(listSize);
-                animationState.frame++;
-
-                if(animationState.frameValToggle == false && animationState.sortState == 0) //Run the sort and check if it is finished
-                {
-                    InitialiseText(renderer,&textRect,"Check");
-                    animationState.phase = 6;
-                    animationState.frame = 0;                    
-                    animationState.frameValAnimated = 0;   
-                }
-
-                if(animationState.sortState == 1)
-                {
-                    SDL_Delay(1);
-                }
-                break;
-            }
-            case(6):
-            {
-                CheckListIsSorted(listSize);
-                animationState.frame++;
-
-                if(animationState.frameValAnimated >= listSize)
-                {
-                    InitialiseText(renderer,&textRect,"Shuffle");
-                    animationState.phase = 7;
-                    animationState.frame = 0;                    
-                    animationState.frameValInvisibleA = 0;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = 0;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;  
-                }
-                SDL_Delay(1);
-                break;
-            }
-            case(7):
-            {
-                ShuffleList(listSize);
-                animationState.frame++;
-
-                if(animationState.frame >= 500)
-                {
-                    InitialiseText(renderer,&textRect,"Cocktail Shaker Sort");
-                    animationState.phase = 8;
-                    animationState.frame = 0;
-                    animationState.frameValInvisibleA = 0;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = -1;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
-                }
-                SDL_Delay(5);
-                break;
-            }
-            case(8):
-            {
-                CocktailShakerSort(listSize); 
-                animationState.frame++;
-
-                if(animationState.frameValToggle == false && animationState.sortState == 0) //Run the sort and check if it is finished
-                {
-                    InitialiseText(renderer,&textRect,"Check");
-                    animationState.phase = 9;
-                    animationState.frame = 0;                    
-                    animationState.frameValAnimated = 0;   
-
-                }
-
-                if(animationState.sortState != 0)
-                {
-                    SDL_Delay(1);
-                }
-
-                break;
-            }
-            case(9):
-            {
-                CheckListIsSorted(listSize);
-                animationState.frame++;
-
-                if(animationState.frameValAnimated >= listSize)
-                {
-                    InitialiseText(renderer,&textRect,"Shuffle");
-                    animationState.phase = 10;
-                    animationState.frame = 0;                    
-                    animationState.frameValInvisibleA = 0;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = 0;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
-                }
-
-                SDL_Delay(1);
-                break;
-            }
-            case(10):
-            {
-                ShuffleList(listSize);
-                animationState.frame++;
-
-                if(animationState.frame >= 500)
-                {
-                    InitialiseText(renderer,&textRect,"Quick Sort");
-                    animationState.phase = 11;
-                    animationState.frame = 0;
-                    animationState.frameValInvisibleA = -1;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = -1;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
-                }
-                SDL_Delay(5);
-                break;
-            }
-            case(11):
-            {
-
-                QuickSort(listSize);
-                animationState.frame++;
-
-                if(animationState.sortState == 3) //Run the sort and check if it is finished
-                {
-                    InitialiseText(renderer,&textRect,"Check");
-                    animationState.phase = 12;
-                    animationState.frame = 0;                    
-                    animationState.frameValAnimated = 0;                
-                }
-
-                SDL_Delay(1);
-
-                break;
-            }
-            case(12):
-            {
-                CheckListIsSorted(listSize);
-                animationState.frame++;
-
-                if(animationState.frameValAnimated >= listSize)
-                {
-                    InitialiseText(renderer,&textRect,"Shuffle");
-                    animationState.phase = 13;
-                    animationState.frame = 0;                    
-                    animationState.frameValInvisibleA = 0;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = 0;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
-                }
-                SDL_Delay(1);
-                break;
-            }
-            case(13):
-            {
-                ShuffleList(listSize);
-                animationState.frame++;
-
-                if(animationState.frame >= 500)
-                {
-                    InitialiseText(renderer,&textRect,"Merge Sort");
-                    animationState.phase = 14;
-                    animationState.frame = 0;
-                    animationState.frameValInvisibleA = -1;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = -1;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
-                }
-                SDL_Delay(5);
-                break;
-            }
-            case(14):
+            if(animationState.phase == 0 || ((animationState.phase - 2) % 3) == 1) //Check phase
             {
                 if(animationState.frame == 0)
                 {
-                    GenerateVector(listSize);
-                }
-
-                MergeSort(listSize,listSize);
-                animationState.frame++;
-
-                if(animationState.sortState == 3) //Run the sort and check if it is finished
-                {
                     InitialiseText(renderer,&textRect,"Check");
-                    animationState.phase = 15;
-                    animationState.frame = 0;                    
-                    animationState.frameValAnimated = 0;                
                 }
 
-                SDL_Delay(1);
-
-                break;
-            }
-            case(15):
-            {
                 CheckListIsSorted(listSize);
                 animationState.frame++;
 
                 if(animationState.frameValAnimated >= listSize)
                 {
-                    InitialiseText(renderer,&textRect,"Shuffle");
-                    animationState.phase = 16;
+                    animationState.phase++;
                     animationState.frame = 0;                    
                     animationState.frameValInvisibleA = 0;
                     animationState.frameValAnimated = -1;
                     animationState.frameValInvisibleB = 0;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;  
                 }
                 SDL_Delay(1);
-                break;
             }
-            case(16):
+            else //Shuffle phase
             {
+                if(animationState.frame == 0)
+                {
+                    InitialiseText(renderer,&textRect,"Shuffle");
+                }
+
                 ShuffleList(listSize);
                 animationState.frame++;
 
+                //cout << animationState.frame << endl;
                 if(animationState.frame >= 500)
                 {
-                    InitialiseText(renderer,&textRect,"Radix Sort (LSD)");
-                    animationState.phase = 17;
+                    animationState.phase++;
                     animationState.frame = 0;
-                    animationState.frameValInvisibleA = -1;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = -1;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
                     animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
                 }
                 SDL_Delay(5);
-                break;
             }
-            case(17):
+        }
+        else
+        {
+            switch(animationState.phase / 3)
             {
-                RadixSort(listSize);
-                animationState.frame++;
-
-                if(animationState.frameValInvisibleB <= 0)
+                case(0):
                 {
-                    InitialiseText(renderer,&textRect,"Check");
-                    animationState.phase = 18;
-                    animationState.frame = 0;                    
-                    animationState.frameValAnimated = 0;                
+                    if(animationState.frame == 0)
+                    {
+                        InitialiseText(renderer,&textRect,"Insertion Sort");
+                        animationState.frameValInvisibleA = 0;
+                        animationState.frameValAnimated = 0;
+                        animationState.frameValInvisibleB = 0;
+                        animationState.sortState = 0;
+                        animationState.frameValToggle = false;
+                    }
+
+                    InsertionSort(listSize);
+                    animationState.frame++;
+
+                    if(animationState.frameValInvisibleA >= listSize) //Run the sort and check if it is finished
+                    {
+                        animationState.phase++;
+                        animationState.frame = 0;                    
+                        animationState.frameValAnimated = 0;              
+                    }
+                    SDL_Delay(1);
+                    break;
                 }
-
-                SDL_Delay(1);
-                break;
-            }
-            case(18):
-            {
-                CheckListIsSorted(listSize);
-                animationState.frame++;
-
-                if(animationState.frameValAnimated >= listSize)
+                case(1):
                 {
-                    InitialiseText(renderer,&textRect,"Shuffle");
-                    animationState.phase = -1;
-                    animationState.frame = 0;                    
-                    animationState.frameValInvisibleA = 0;
-                    animationState.frameValAnimated = -1;
-                    animationState.frameValInvisibleB = 0;
-                    animationState.sortState = 0;
-                    animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
-                    animationState.frameValToggle = false;
+                    if(animationState.frame == 0)
+                    {
+                        InitialiseText(renderer,&textRect,"Bubble Sort");
+                        animationState.frameValInvisibleA = -1;
+                        animationState.frameValAnimated = -1;
+                        animationState.frameValInvisibleB = -1;
+                        animationState.sortState = 0;
+                        animationState.frameValToggle = false;
+                    }
+
+                    BubbleSort(listSize);
+                    animationState.frame++;
+
+                    if(animationState.frameValToggle == false && animationState.sortState == 0) //Run the sort and check if it is finished
+                    {
+                        animationState.phase++;
+                        animationState.frame = 0;                    
+                        animationState.frameValAnimated = 0;   
+                    }
+
+                    if(animationState.sortState == 1)
+                    {
+                        SDL_Delay(1);
+                    }
+                    break;
                 }
-                SDL_Delay(1);
-                break;
-            }
-            default:
-            {
-                break;
+                case(2):
+                {
+                    if(animationState.frame == 0)
+                    {
+                        InitialiseText(renderer,&textRect,"Cocktail Shaker Sort");
+                        animationState.frameValInvisibleA = 0;
+                        animationState.frameValAnimated = -1;
+                        animationState.frameValInvisibleB = -1;
+                        animationState.sortState = 0;
+                        animationState.frameValToggle = false;
+                    }
+
+                    CocktailShakerSort(listSize); 
+                    animationState.frame++;
+
+                    if(animationState.frameValToggle == false && animationState.sortState == 0) //Run the sort and check if it is finished
+                    {
+                        animationState.phase = 9;
+                        animationState.frame = 0;                    
+                        animationState.frameValAnimated = 0;   
+
+                    }
+
+                    if(animationState.sortState != 0)
+                    {
+                        SDL_Delay(1);
+                    }
+
+                    break;
+                }
+                case(3):
+                {
+                    if(animationState.frame == 0)
+                    {
+                        InitialiseText(renderer,&textRect,"Quick Sort");
+                        animationState.frameValInvisibleA = -1;
+                        animationState.frameValAnimated = -1;
+                        animationState.frameValInvisibleB = -1;
+                        animationState.sortState = 0;
+                        animationState.frameValToggle = false;
+                    }
+
+                    QuickSort(listSize);
+                    animationState.frame++;
+
+                    if(animationState.sortState == 3) //Run the sort and check if it is finished
+                    {
+                        animationState.phase++;
+                        animationState.frame = 0;                    
+                        animationState.frameValAnimated = 0;                
+                    }
+
+                    SDL_Delay(1);
+
+                    break;
+                }
+                case(4):
+                {
+                    if(animationState.frame == 0)
+                    {
+                        InitialiseText(renderer,&textRect,"Merge Sort");
+                        animationState.frameValInvisibleA = -1;
+                        animationState.frameValAnimated = -1;
+                        animationState.frameValInvisibleB = -1;
+                        animationState.sortState = 0;
+                        animationState.frameValToggle = false;
+                        GenerateVector(listSize);
+                    }
+
+                    MergeSort(listSize,listSize);
+                    animationState.frame++;
+
+                    if(animationState.sortState == 3) //Run the sort and check if it is finished
+                    {
+                        animationState.phase++;
+                        animationState.frame = 0;                    
+                        animationState.frameValAnimated = 0;                
+                    }
+
+                    SDL_Delay(1);
+
+                    break;
+                }
+                case(5):
+                {                       
+                    if(animationState.frame == 0)
+                    {
+                        InitialiseText(renderer,&textRect,"Radix Sort (LSD)");
+                        animationState.frameValInvisibleA = -1;
+                        animationState.frameValAnimated = -1;
+                        animationState.frameValInvisibleB = -1;
+                        animationState.sortState = 0;
+                        animationState.frameValToggle = false;
+                    }
+                    RadixSort(listSize);
+                    animationState.frame++;
+
+                    if(animationState.frameValInvisibleB <= 0)
+                    {
+                        animationState.phase++;
+                        animationState.frame = 0;                    
+                        animationState.frameValAnimated = 0;                
+                    }
+
+                    SDL_Delay(1);
+                    break;
+                }
+                default:
+                {
+                    if(animationState.frame == 0)
+                    {
+                        InitialiseText(renderer,&textRect,"End");
+                    }
+                    animationState.frame = 1;
+                    break;
+                }
             }
         }
 
