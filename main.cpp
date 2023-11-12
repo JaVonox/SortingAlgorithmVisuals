@@ -3,8 +3,11 @@
 #include <vector>
 #include <math.h>
 #include <SDL2/SDL_ttf.h>
+#include <VSSynth/VSSynth.h>
 
 using namespace std;
+using namespace VSSynth;
+using namespace Generators;
 
 struct
 {
@@ -676,7 +679,19 @@ int main(int argc,char *argv[])
 
     SDL_RenderPresent(renderer);
 
-    
+        Tone tone(
+        [](double frequency, double time) {
+            return Waveforms::sine(frequency, time);
+        });
+    tone.playNote(Notes::C4);
+
+    // Create a synthesizer, with default settings
+    Synthesizer synth;
+
+    // Open the synth for playback with the sine wave we have created
+    synth.open();
+    synth.addSoundGenerator(&tone);
+    synth.unpause();
 
     SDL_Event event;
 
@@ -923,5 +938,9 @@ int main(int argc,char *argv[])
             }
         }
     }
+
+    synth.pause();
+    synth.close();
+
     return 0;
 }
