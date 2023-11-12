@@ -27,6 +27,21 @@ struct
 
 } animationState;
 
+class ToneItem{
+    public:
+        double freq;
+        int timeRemaining;
+
+        ToneItem(double nFreq, int nTime)
+        {
+            freq = nFreq;
+            timeRemaining = nTime;
+        }
+};
+
+vector<ToneItem> audioKeys = {}; //Audio freq by time remaining and isplaying
+
+
 vector<int> sortableList = {}; //List to be sorted
 
 //Text Rendering variables
@@ -649,6 +664,45 @@ void DrawText(SDL_Renderer *renderer, SDL_Rect *rect)
     SDL_RenderCopy(renderer,textTexture,NULL,rect);
 }
 
+void AppendAudio(Tone *tone, int freq, int framesLeft)
+{
+    audioKeys.push_back(ToneItem(freq,framesLeft));
+    tone->playNote(freq);
+}
+
+void PollAudio(Tone *tone)
+{
+    int audioLen = size(audioKeys);
+
+    for(int i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
+    {
+        if(audioKeys[i].timeRemaining <= 0)
+        {
+            tone->stopNote(audioKeys[i].freq);
+
+            audioKeys.erase(audioKeys.begin()+i); //Remove the index from the vector
+            //Reset the properties for the loop
+            audioLen--;
+            i--;
+        }
+        else
+        {
+            audioKeys[i].timeRemaining--;
+        }
+    }
+}
+
+void ClearAudio(Tone *tone)
+{
+    int audioLen = size(audioKeys);
+
+    for(int i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
+    {
+        tone->stopNote(audioKeys[i].freq);
+    }
+    audioKeys.clear();
+}
+
 int main(int argc,char *argv[])
 {
     srand(time(NULL));
@@ -679,15 +733,17 @@ int main(int argc,char *argv[])
 
     SDL_RenderPresent(renderer);
 
-        Tone tone(
+    Tone tone(
         [](double frequency, double time) {
-            return Waveforms::sine(frequency, time);
+            return Waveforms::triangle(frequency, time);
         });
-    tone.playNote(Notes::C4);
+
+    //tone.playNote(Notes::C4);
 
     // Create a synthesizer, with default settings
     Synthesizer synth;
 
+    tone.setVolume(20);
     // Open the synth for playback with the sine wave we have created
     synth.open();
     synth.addSoundGenerator(&tone);
@@ -697,9 +753,16 @@ int main(int argc,char *argv[])
 
     while(true)
     {
+        
         if(animationState.frame == 0 && animationState.phase != -1)
         {
-            SDL_Delay(1500);
+            SDL_Delay(100);
+            ClearAudio(&tone);
+            SDL_Delay(1450);
+        }
+        else
+        {
+            PollAudio(&tone);
         }
 
         if(!((animationState.phase - 2) % 3==0)) //If not in a sorting animationstate. each sorting phase occurs on (x-2) % 3 == 0
@@ -724,7 +787,13 @@ int main(int argc,char *argv[])
                     animationState.frameValAnimated = -1;
                     animationState.frameValInvisibleB = 0;
                 }
-                SDL_Delay(1);
+                else
+                {
+                    AppendAudio(&tone,200 + animationState.frameValAnimated,2);
+                }
+
+                SDL_Delay(5);
+
             }
             else //Shuffle phase
             {
