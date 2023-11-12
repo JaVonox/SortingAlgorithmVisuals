@@ -673,7 +673,6 @@ void AppendAudio(Tone *tone, int freq, int framesLeft)
 void PollAudio(Tone *tone)
 {
     int audioLen = size(audioKeys);
-
     for(int i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
     {
         if(audioKeys[i].timeRemaining <= 0)
@@ -734,17 +733,14 @@ int main(int argc,char *argv[])
     SDL_RenderPresent(renderer);
 
     Tone tone(
-        [](double frequency, double time) {
-            return Waveforms::triangle(frequency, time);
-        });
+    [](double frequency, double time) {
+        return Waveforms::triangle(frequency,time);
+    });
 
-    //tone.playNote(Notes::C4);
-
-    // Create a synthesizer, with default settings
     Synthesizer synth;
 
     tone.setVolume(20);
-    // Open the synth for playback with the sine wave we have created
+
     synth.open();
     synth.addSoundGenerator(&tone);
     synth.unpause();
@@ -789,7 +785,7 @@ int main(int argc,char *argv[])
                 }
                 else
                 {
-                    AppendAudio(&tone,200 + animationState.frameValAnimated,2);
+                    AppendAudio(&tone,100 + ((float)(animationState.frameValAnimated)*2.0f),0);
                 }
 
                 SDL_Delay(5);
