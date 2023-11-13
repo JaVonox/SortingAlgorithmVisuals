@@ -41,13 +41,61 @@ class ToneItem{
 
 vector<ToneItem> audioKeys = {}; //Audio freq by time remaining and isplaying
 
-
 vector<int> sortableList = {}; //List to be sorted
 
 //Text Rendering variables
 SDL_Texture* textTexture;
 SDL_Surface* textSurface;
 SDL_Rect textRect;
+
+//Audio variable
+Tone tone(
+[](double frequency, double time) {
+    return Waveforms::triangle(frequency,time);
+});
+
+void AppendAudio(int freq, int framesLeft)
+{
+    audioKeys.push_back(ToneItem(freq,framesLeft));
+    tone.playNote(freq);
+}
+
+void PollAudio()
+{
+    int audioLen = size(audioKeys);
+    for(int i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
+    {
+        if(audioKeys[i].timeRemaining <= 0)
+        {
+            tone.stopNote(audioKeys[i].freq);
+
+            audioKeys.erase(audioKeys.begin()+i); //Remove the index from the vector
+            //Reset the properties for the loop
+            audioLen--;
+            i--;
+        }
+        else
+        {
+            audioKeys[i].timeRemaining--;
+        }
+    }
+}
+
+void ClearAudio()
+{
+    int audioLen = size(audioKeys);
+
+    for(int i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
+    {
+        tone.stopNote(audioKeys[i].freq);
+    }
+    audioKeys.clear();
+}
+
+double GetFreq(int inVal)
+{
+    return 100 + ((float)(inVal)*2.0f);
+}
 
 void CheckListIsSorted(int size)
 {
@@ -74,6 +122,8 @@ void ShuffleList(int listSize)
     int swapVal = sortableList[swapIndex0];
     sortableList[swapIndex0] = sortableList[swapIndex1];
     sortableList[swapIndex1] = swapVal;
+
+    AppendAudio(GetFreq(swapVal),0);
 }
 
 void InsertionSort(int listSize)
@@ -98,6 +148,8 @@ void InsertionSort(int listSize)
         {
             if(animationState.frameValAnimated > 0 && sortableList[animationState.frameValAnimated-1] > sortableList[animationState.frameValAnimated]) 
             {
+                AppendAudio(GetFreq(sortableList[animationState.frameValAnimated-1]),0); 
+
                 int swapVal = sortableList[animationState.frameValAnimated];
                 sortableList[animationState.frameValAnimated] = sortableList[animationState.frameValAnimated-1];
                 sortableList[animationState.frameValAnimated-1] = swapVal;
@@ -130,9 +182,14 @@ void BubbleSort(int listSize)
             
             if(animationState.frameValAnimated <= (listSize - animationState.frameValInvisibleA) - 1)
             {
+
+                AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0); 
+
                 if(sortableList[animationState.frameValAnimated - 1] > sortableList[animationState.frameValAnimated])
                 {
+
                     int swapVal = sortableList[animationState.frameValAnimated];
+
                     sortableList[animationState.frameValAnimated] = sortableList[animationState.frameValAnimated-1];
                     sortableList[animationState.frameValAnimated-1] = swapVal;
                     animationState.frameValToggle = true;
@@ -664,44 +721,6 @@ void DrawText(SDL_Renderer *renderer, SDL_Rect *rect)
     SDL_RenderCopy(renderer,textTexture,NULL,rect);
 }
 
-void AppendAudio(Tone *tone, int freq, int framesLeft)
-{
-    audioKeys.push_back(ToneItem(freq,framesLeft));
-    tone->playNote(freq);
-}
-
-void PollAudio(Tone *tone)
-{
-    int audioLen = size(audioKeys);
-    for(int i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
-    {
-        if(audioKeys[i].timeRemaining <= 0)
-        {
-            tone->stopNote(audioKeys[i].freq);
-
-            audioKeys.erase(audioKeys.begin()+i); //Remove the index from the vector
-            //Reset the properties for the loop
-            audioLen--;
-            i--;
-        }
-        else
-        {
-            audioKeys[i].timeRemaining--;
-        }
-    }
-}
-
-void ClearAudio(Tone *tone)
-{
-    int audioLen = size(audioKeys);
-
-    for(int i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
-    {
-        tone->stopNote(audioKeys[i].freq);
-    }
-    audioKeys.clear();
-}
-
 int main(int argc,char *argv[])
 {
     srand(time(NULL));
@@ -732,11 +751,6 @@ int main(int argc,char *argv[])
 
     SDL_RenderPresent(renderer);
 
-    Tone tone(
-    [](double frequency, double time) {
-        return Waveforms::triangle(frequency,time);
-    });
-
     Synthesizer synth;
 
     tone.setVolume(20);
@@ -753,12 +767,12 @@ int main(int argc,char *argv[])
         if(animationState.frame == 0 && animationState.phase != -1)
         {
             SDL_Delay(100);
-            ClearAudio(&tone);
+            ClearAudio();
             SDL_Delay(1450);
         }
         else
         {
-            PollAudio(&tone);
+            PollAudio();
         }
 
         if(!((animationState.phase - 2) % 3==0)) //If not in a sorting animationstate. each sorting phase occurs on (x-2) % 3 == 0
@@ -785,7 +799,7 @@ int main(int argc,char *argv[])
                 }
                 else
                 {
-                    AppendAudio(&tone,100 + ((float)(animationState.frameValAnimated)*2.0f),0);
+                    AppendAudio(100 + GetFreq(animationState.frameValAnimated),0);
                 }
 
                 SDL_Delay(5);
@@ -801,7 +815,6 @@ int main(int argc,char *argv[])
                 ShuffleList(listSize);
                 animationState.frame++;
 
-                //cout << animationState.frame << endl;
                 if(animationState.frame >= 500)
                 {
                     animationState.phase++;
@@ -838,7 +851,7 @@ int main(int argc,char *argv[])
                         animationState.frame = 0;                    
                         animationState.frameValAnimated = 0;              
                     }
-                    SDL_Delay(1);
+                    SDL_Delay(3);
                     break;
                 }
                 case(1):
@@ -865,7 +878,7 @@ int main(int argc,char *argv[])
 
                     if(animationState.sortState == 1)
                     {
-                        SDL_Delay(1);
+                        SDL_Delay(3);
                     }
                     break;
                 }
