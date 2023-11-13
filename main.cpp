@@ -94,7 +94,7 @@ void ClearAudio()
 
 double GetFreq(int inVal)
 {
-    return 100+((float)(inVal)*1.9f);
+    return abs(100+((float)(inVal)*1.9f));
 }
 
 void CheckListIsSorted(int size)
@@ -280,8 +280,11 @@ int QuickSortPartition(int low, int high) //returns the new pivot index
         animationState.frameValAnimated = low;
     }
 
+    AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0); 
+
     if(animationState.frameValAnimated < high) //Loop through until frame b becomes greater than or equal to the high value
     {
+
         if(sortableList[animationState.frameValAnimated] <= sortableList[high])
         {
             animationState.frameValInvisibleA++;
@@ -388,6 +391,8 @@ void IterateMerge(int begin, int middle, int end, bool isSwapped)
         animationState.frameValInvisibleB = begin; //k
         animationState.frameValToggle = true; //Reset frameValToggle
     }
+
+    AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0); 
 
     if(animationState.frameValInvisibleB< end)
     {
@@ -562,8 +567,10 @@ void RadixSort(int listSize)
                 //Increment the count of each digit
                 int currentCount = get<0>(animationState.frameValVector[index%10]);
                 animationState.frameValVector[index%10] = tuple<int,int,int,bool>(currentCount+1,0,0,0);
-
+                
+                AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0); 
                 animationState.frameValAnimated++;
+
             }
             else
             {
@@ -587,10 +594,13 @@ void RadixSort(int listSize)
             if(animationState.frameValAnimated >= 0)
             {
                 int index = floor((float)(animationState.secondaryList[animationState.frameValAnimated])/ (float)(animationState.frameValInvisibleA)); 
-                
+
                 int indexToModify = (get<0>(animationState.frameValVector[index % 10]));
                 sortableList[indexToModify - 1] = animationState.secondaryList[animationState.frameValAnimated];
                 animationState.frameValVector[index % 10] = tuple<int,int,int,bool>(indexToModify-1,0,0,0);
+
+                AppendAudio(GetFreq(sortableList[indexToModify - 1]),1); //Only instance so far where more than 1 frame of audio is used - allows for simultaneous audio
+
                 animationState.frameValAnimated -=1;
             }
             else
@@ -605,6 +615,7 @@ void RadixSort(int listSize)
             if(animationState.frameValAnimated < listSize)
             {
                 animationState.secondaryList[animationState.frameValAnimated] = sortableList[animationState.frameValAnimated];
+                AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0); 
                 animationState.frameValAnimated++;
             }
             else
@@ -942,7 +953,7 @@ int main(int argc,char *argv[])
                         animationState.frameValAnimated = 0;                
                     }
 
-                    SDL_Delay(1);
+                    SDL_Delay(3);
 
                     break;
                 }
@@ -969,7 +980,7 @@ int main(int argc,char *argv[])
                         animationState.frameValAnimated = 0;                
                     }
 
-                    SDL_Delay(1);
+                    SDL_Delay(3);
 
                     break;
                 }
@@ -994,7 +1005,7 @@ int main(int argc,char *argv[])
                         animationState.frameValAnimated = 0;                
                     }
 
-                    SDL_Delay(1);
+                    SDL_Delay(4);
                     break;
                 }
                 default:
