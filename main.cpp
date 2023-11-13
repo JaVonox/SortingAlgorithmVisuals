@@ -94,7 +94,7 @@ void ClearAudio()
 
 double GetFreq(int inVal)
 {
-    return 100 + ((float)(inVal)*2.0f);
+    return 100+((float)(inVal)*1.9f);
 }
 
 void CheckListIsSorted(int size)
@@ -222,6 +222,8 @@ void CocktailShakerSort(int listSize)
             
             if(animationState.frameValAnimated <= (listSize - animationState.frameValInvisibleA))
             {
+                AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0);
+
                 if(sortableList[animationState.frameValAnimated - 1] > sortableList[animationState.frameValAnimated])
                 {
                     int swapVal = sortableList[animationState.frameValAnimated];
@@ -249,6 +251,8 @@ void CocktailShakerSort(int listSize)
         {
             if(animationState.frameValAnimated > animationState.frameValInvisibleA)
             {
+                AppendAudio(GetFreq(sortableList[animationState.frameValAnimated - 1]),0); 
+
                 if(sortableList[animationState.frameValAnimated - 1] > sortableList[animationState.frameValAnimated])
                 {
                     int swapVal = sortableList[animationState.frameValAnimated];
@@ -768,7 +772,11 @@ int main(int argc,char *argv[])
         {
             SDL_Delay(100);
             ClearAudio();
-            SDL_Delay(1450);
+            if(animationState.phase == 0 || ((animationState.phase - 2) % 3) != 1)
+            {
+                SDL_Delay(1400);
+            }
+
         }
         else
         {
@@ -907,7 +915,7 @@ int main(int argc,char *argv[])
 
                     if(animationState.sortState != 0)
                     {
-                        SDL_Delay(1);
+                        SDL_Delay(3);
                     }
 
                     break;
