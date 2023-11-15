@@ -94,7 +94,7 @@ void ClearAudio()
 
 double GetFreq(int inVal)
 {
-    return abs(100+((float)(inVal)*1.9f));
+    return 100+((float)(inVal)*1.9f);
 }
 
 void CheckListIsSorted(int size)
@@ -392,7 +392,10 @@ void IterateMerge(int begin, int middle, int end, bool isSwapped)
         animationState.frameValToggle = true; //Reset frameValToggle
     }
 
-    AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0); 
+    if(animationState.frameValAnimated < 300) //Animated frame can become 300 but the value is never accessed normally. if the index is accessed it'll respond with junk data usually though 
+    {
+        AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0); 
+    }
 
     if(animationState.frameValInvisibleB< end)
     {
@@ -462,10 +465,6 @@ void MergeSplit(int begin, int end, bool isSwapped) //is Swapped tells the code 
     //The -1 as the end value represents this as a merge split call
     animationState.frameValVector.push_back(tuple<int,int,int,bool>{middle,end,-1,!isSwapped});
     animationState.frameValVector.push_back(tuple<int,int,int,bool>{begin,middle,-1,!isSwapped});
-
-    //MergeSplit(begin,middle,!isSwapped);
-    //MergeSplit(middle,end,!isSwapped);
-    //IterateMerge(begin, middle, end, isSwapped);
 
 }
 
@@ -776,6 +775,8 @@ int main(int argc,char *argv[])
 
     SDL_Event event;
 
+    _sleep(7000);
+
     while(true)
     {
         
@@ -1005,7 +1006,7 @@ int main(int argc,char *argv[])
                         animationState.frameValAnimated = 0;                
                     }
 
-                    SDL_Delay(4);
+                    SDL_Delay(3);
                     break;
                 }
                 default:
