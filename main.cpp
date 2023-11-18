@@ -1,3 +1,5 @@
+#define LISTSIZE 300
+
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <vector>
@@ -11,19 +13,19 @@ using namespace Generators;
 
 struct
 {
-    int phase = 0; //Selects which phase of generation the software is currently in
+    int16_t phase = 0; //Selects which phase of generation the software is currently in
     int frame = 0;
 
     //Extra values to store in order to store variables for the sorting algorithms
-    int frameValInvisibleA = -1;
-    int frameValAnimated = 0;
-    int frameValInvisibleB = -1;
+    int16_t frameValInvisibleA = -1;
+    int16_t frameValAnimated = 0;
+    int16_t frameValInvisibleB = -1;
     bool frameValToggle = false;
-    vector<int> secondaryList = {}; //Used for storing single value items
-    vector<tuple<int,int,int,bool>> frameValVector = {};
+    int16_t secondaryList[LISTSIZE] = {}; //Used for storing single value items
+    vector<tuple<int16_t,int16_t,int16_t,bool>> frameValVector = {};
 
     //Values to store state within the sorting algorithm
-    int sortState = -1;
+    int16_t sortState = -1;
 
 } animationState;
 
@@ -41,7 +43,7 @@ class ToneItem{
 
 vector<ToneItem> audioKeys = {}; //Audio freq by time remaining and isplaying
 
-vector<int> sortableList = {}; //List to be sorted
+int16_t sortableList[LISTSIZE] = {}; //List to be sorted
 
 //Text Rendering variables
 SDL_Texture* textTexture;
@@ -54,16 +56,19 @@ Tone tone(
     return Waveforms::triangle(frequency,time);
 });
 
-void AppendAudio(int freq, int framesLeft)
+void AppendAudio(uint16_t freq, int framesLeft)
 {
-    audioKeys.push_back(ToneItem(freq,framesLeft));
-    tone.playNote(freq);
+    if(freq > 0)
+    {
+        audioKeys.push_back(ToneItem(freq,framesLeft));
+        tone.playNote(freq);
+    }
 }
 
 void PollAudio()
 {
     int audioLen = size(audioKeys);
-    for(int i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
+    for(uint16_t i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
     {
         if(audioKeys[i].timeRemaining <= 0)
         {
@@ -85,19 +90,19 @@ void ClearAudio()
 {
     int audioLen = size(audioKeys);
 
-    for(int i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
+    for(uint16_t i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
     {
         tone.stopNote(audioKeys[i].freq);
     }
     audioKeys.clear();
 }
 
-double GetFreq(int inVal)
+double GetFreq(uint16_t inVal)
 {
     return 100+((float)(inVal)*1.9f);
 }
 
-void CheckListIsSorted(int size)
+void CheckListIsSorted()
 {
     if(sortableList[animationState.frameValAnimated] != animationState.frameValAnimated+1)
     {
@@ -106,18 +111,18 @@ void CheckListIsSorted(int size)
     animationState.frameValAnimated++;
 }
 
-void PopulateList(int size)
+void PopulateList()
 {
-    for(int i =0;i<size;i++)
+    for(uint16_t i =0;i<LISTSIZE;i++)
     {
-        sortableList.push_back(i+1);
+        sortableList[i] = i+1;
     }
 }
 
-void ShuffleList(int listSize)
+void ShuffleList()
 {
-    int swapIndex0 = rand() % listSize;
-    int swapIndex1 = rand() % listSize;
+    int swapIndex0 = rand() % LISTSIZE;
+    int swapIndex1 = rand() % LISTSIZE;
 
     int swapVal = sortableList[swapIndex0];
     sortableList[swapIndex0] = sortableList[swapIndex1];
@@ -126,7 +131,7 @@ void ShuffleList(int listSize)
     AppendAudio(GetFreq(swapVal),0);
 }
 
-void InsertionSort(int listSize)
+void InsertionSort()
 {
     switch(animationState.sortState)
     {
@@ -165,7 +170,7 @@ void InsertionSort(int listSize)
     }
 }
 
-void BubbleSort(int listSize)
+void BubbleSort()
 {
     switch(animationState.sortState)
     {
@@ -180,7 +185,7 @@ void BubbleSort(int listSize)
         case(1): //State 1 is when the loop occurs
         {
             
-            if(animationState.frameValAnimated <= (listSize - animationState.frameValInvisibleA) - 1)
+            if(animationState.frameValAnimated <= (LISTSIZE - animationState.frameValInvisibleA) - 1)
             {
 
                 AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0); 
@@ -205,7 +210,7 @@ void BubbleSort(int listSize)
     }
 }
 
-void CocktailShakerSort(int listSize)
+void CocktailShakerSort()
 {
     switch(animationState.sortState)
     {
@@ -220,7 +225,7 @@ void CocktailShakerSort(int listSize)
         case(1): //First loop
         {
             
-            if(animationState.frameValAnimated <= (listSize - animationState.frameValInvisibleA))
+            if(animationState.frameValAnimated <= (LISTSIZE - animationState.frameValInvisibleA))
             {
                 AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0);
 
@@ -237,7 +242,7 @@ void CocktailShakerSort(int listSize)
             {
                 if(animationState.frameValToggle) //Enter backwards loop
                 {
-                    animationState.frameValAnimated = (listSize - animationState.frameValInvisibleA);
+                    animationState.frameValAnimated = (LISTSIZE - animationState.frameValInvisibleA);
                     animationState.sortState = 2;
                 }
                 else
@@ -271,7 +276,7 @@ void CocktailShakerSort(int listSize)
     }
 }
 
-int QuickSortPartition(int low, int high) //returns the new pivot index
+int QuickSortPartition(uint16_t low, uint16_t high) //returns the new pivot index
 {
     if(animationState.frameValInvisibleA == -1 && animationState.frameValAnimated == -1) //On any first run of this, initialise the frame values
     {
@@ -311,18 +316,18 @@ int QuickSortPartition(int low, int high) //returns the new pivot index
 
 }
 
-void QuickSort(int listSize)
+void QuickSort()
 {
 
     switch(animationState.sortState)
     {
         case(0): //Initialisation
         {
-            int partIndex = QuickSortPartition(0,listSize-1);
+            int partIndex = QuickSortPartition(0,LISTSIZE-1);
             if(animationState.frameValToggle) //When the partition has finished
             {
                 animationState.frameValVector.push_back({0,partIndex-1,0,0}); //Push in left pivot
-                animationState.frameValVector.push_back({partIndex+1,listSize-1,0,0}); //Push in right pivot
+                animationState.frameValVector.push_back({partIndex+1,LISTSIZE-1,0,0}); //Push in right pivot
                 animationState.sortState = 1;
             }
             break;
@@ -382,7 +387,7 @@ void QuickSort(int listSize)
     }
 }
 
-void IterateMerge(int begin, int middle, int end, bool isSwapped)
+void IterateMerge(uint16_t begin, uint16_t middle, uint16_t end, bool isSwapped)
 {
     if(animationState.frameValToggle == false) //If list is being initialised
     {
@@ -392,7 +397,7 @@ void IterateMerge(int begin, int middle, int end, bool isSwapped)
         animationState.frameValToggle = true; //Reset frameValToggle
     }
 
-    if(animationState.frameValAnimated < 300) //Animated frame can become 300 but the value is never accessed normally. if the index is accessed it'll respond with junk data usually though 
+    if(animationState.frameValAnimated < LISTSIZE) //Animated frame can become 300 but the value is never accessed normally. if the index is accessed it'll respond with junk data usually though 
     {
         AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0); 
     }
@@ -403,12 +408,12 @@ void IterateMerge(int begin, int middle, int end, bool isSwapped)
         {
             if(animationState.frameValInvisibleA < middle && (animationState.frameValAnimated >= end || sortableList[animationState.frameValInvisibleA] <= sortableList[animationState.frameValAnimated]))
             {
-                animationState.secondaryList.at(animationState.frameValInvisibleB) = sortableList[animationState.frameValInvisibleA];
+                animationState.secondaryList[animationState.frameValInvisibleB] = sortableList[animationState.frameValInvisibleA];
                 animationState.frameValInvisibleA++;
             }
             else
             {
-                animationState.secondaryList.at(animationState.frameValInvisibleB) = sortableList[animationState.frameValAnimated];
+                animationState.secondaryList[animationState.frameValInvisibleB] = sortableList[animationState.frameValAnimated];
                 animationState.frameValAnimated++;
             }
 
@@ -416,14 +421,14 @@ void IterateMerge(int begin, int middle, int end, bool isSwapped)
         }
         else
         {
-            if(animationState.frameValInvisibleA < middle && (animationState.frameValAnimated >= end || animationState.secondaryList.at(animationState.frameValInvisibleA) <= animationState.secondaryList.at(animationState.frameValAnimated)))
+            if(animationState.frameValInvisibleA < middle && (animationState.frameValAnimated >= end || animationState.secondaryList[animationState.frameValInvisibleA] <= animationState.secondaryList[animationState.frameValAnimated]))
             {
-                sortableList[animationState.frameValInvisibleB] = animationState.secondaryList.at(animationState.frameValInvisibleA);
+                sortableList[animationState.frameValInvisibleB] = animationState.secondaryList[animationState.frameValInvisibleA];
                 animationState.frameValInvisibleA++;
             }
             else
             {
-                sortableList[animationState.frameValInvisibleB] = animationState.secondaryList.at(animationState.frameValAnimated);
+                sortableList[animationState.frameValInvisibleB] = animationState.secondaryList[animationState.frameValAnimated];
                 animationState.frameValAnimated++;
             }
 
@@ -442,15 +447,15 @@ void IterateMerge(int begin, int middle, int end, bool isSwapped)
 
 }
 
-void CopyArray(int begin, int end)
+void CopyArray(int16_t begin, int16_t end)
 {
-    for(int i = begin; i<end;i++)
+    for(uint16_t i = begin; i<end;i++)
     {
-        animationState.secondaryList.at(i) = sortableList[i];
+        animationState.secondaryList[i] = sortableList[i];
     }
 }
 
-void MergeSplit(int begin, int end, bool isSwapped) //is Swapped tells the code if the arrays should be swapped in the next function call. null is just so it can be used in the queue
+void MergeSplit(int16_t begin, int16_t end, bool isSwapped) //is Swapped tells the code if the arrays should be swapped in the next function call. null is just so it can be used in the queue
 {
     if(end - begin <= 1)
     {
@@ -468,15 +473,15 @@ void MergeSplit(int begin, int end, bool isSwapped) //is Swapped tells the code 
 
 }
 
-void GenerateVector(int listSize)
+void GenerateVector()
 {
-    for(int i = 0; i<listSize;i++)
+    for(uint16_t i = 0; i<LISTSIZE;i++)
     {
-        animationState.secondaryList.push_back(0);
+        animationState.secondaryList[i] = 0;
     }
 }
 
-void MergeSort(int listSize, int n)
+void MergeSort(uint16_t n)
 {
     switch(animationState.sortState)
     {
@@ -526,30 +531,30 @@ void MergeSort(int listSize, int n)
     }
 }
 
-void RadixSort(int listSize)
+void RadixSort()
 {
     switch(animationState.sortState)
     {
         case(0): //initialisation
         {
-            for(int i=0;i<listSize;i++)
+            for(uint16_t i=0;i<LISTSIZE;i++)
             {
-                animationState.secondaryList.push_back(sortableList[i]); //Make a temporary copy of the sortable list
+                animationState.secondaryList[i] = sortableList[i]; //Make a temporary copy of the sortable list
             }
 
-            for(int i =0;i<10;i++)
+            for(uint16_t i =0;i<10;i++)
             {
                 animationState.frameValVector.push_back(tuple<int,int,int,bool>(0,0,0,0));
             }
             animationState.sortState = 1;
             animationState.frameValAnimated = 0;
             animationState.frameValInvisibleA = 1; //Invisible A stores the value of the current exponent
-            animationState.frameValInvisibleB = 3; //Invisible B stores the current digit count
+            animationState.frameValInvisibleB = log10(LISTSIZE)+1; //Invisible B stores the current digit count
             break;
         }
         case(1): //Reset the count of each digit list
         {
-            for(int i =0;i<10;i++)
+            for(uint16_t i =0;i<10;i++)
             {
                 animationState.frameValVector[i] = tuple<int,int,int,bool>(0,0,0,0);
             }
@@ -559,7 +564,7 @@ void RadixSort(int listSize)
         }
         case(2): //Count up the digit value for each item on the current exponent
         {
-            if(animationState.frameValAnimated < listSize)
+            if(animationState.frameValAnimated < LISTSIZE)
             {
                 int index = floor((float)(animationState.secondaryList[animationState.frameValAnimated])/ (float)(animationState.frameValInvisibleA)); 
 
@@ -573,7 +578,7 @@ void RadixSort(int listSize)
             }
             else
             {
-                for(int i=1;i<10;i++) //Reprocess framevalvector array
+                for(uint16_t i=1;i<10;i++) //Reprocess framevalvector array
                 {
                     int currentCount = get<0>(animationState.frameValVector[i]);
                     int prevCount = get<0>(animationState.frameValVector[i-1]);
@@ -581,7 +586,7 @@ void RadixSort(int listSize)
                     animationState.frameValVector[i] = tuple<int,int,int,bool>(currentCount+prevCount,0,0,0);
                 }
 
-                animationState.frameValAnimated = listSize-1;
+                animationState.frameValAnimated = LISTSIZE-1;
                 animationState.sortState =3;
             }
 
@@ -611,7 +616,7 @@ void RadixSort(int listSize)
         }
         case(4):
         {
-            if(animationState.frameValAnimated < listSize)
+            if(animationState.frameValAnimated < LISTSIZE)
             {
                 animationState.secondaryList[animationState.frameValAnimated] = sortableList[animationState.frameValAnimated];
                 AppendAudio(GetFreq(sortableList[animationState.frameValAnimated]),0); 
@@ -631,9 +636,9 @@ void RadixSort(int listSize)
     
 }
 
-void DrawList(int listSize, SDL_Renderer *renderer)
+void DrawList(SDL_Renderer *renderer)
 {
-    for(int i=0;i<listSize;i++)
+    for(uint16_t i=0;i<LISTSIZE;i++)
     {
         float hVal = sortableList[i]; //The 1-360 value that represents the value and the hue of a column.
         SDL_Rect rect;
@@ -703,6 +708,14 @@ void DrawList(int listSize, SDL_Renderer *renderer)
     }
 }
 
+void ClearSecondaryList()
+{
+    for(uint16_t i = 0; i < LISTSIZE;i++)
+    {
+        animationState.secondaryList[i] = 0;
+    }
+}
+
 void InitialiseText(SDL_Renderer *renderer, SDL_Rect *rect, char* text)
 { 
     if(textTexture != NULL)
@@ -758,10 +771,9 @@ int main(int argc,char *argv[])
 
     SDL_RenderPresent(renderer);
 
-    int listSize = 300;
-    PopulateList(listSize);
+    PopulateList();
     cout << "List populated" << endl;
-    DrawList(listSize,renderer);
+    DrawList(renderer);
 
     SDL_RenderPresent(renderer);
 
@@ -806,10 +818,10 @@ int main(int argc,char *argv[])
                     InitialiseText(renderer,&textRect,"Check");
                 }
 
-                CheckListIsSorted(listSize);
+                CheckListIsSorted();
                 animationState.frame++;
 
-                if(animationState.frameValAnimated >= listSize)
+                if(animationState.frameValAnimated >= LISTSIZE)
                 {
                     animationState.phase++;
                     animationState.frame = 0;                    
@@ -832,7 +844,7 @@ int main(int argc,char *argv[])
                     InitialiseText(renderer,&textRect,"Shuffle");
                 }
 
-                ShuffleList(listSize);
+                ShuffleList();
                 animationState.frame++;
 
                 if(animationState.frame >= 500)
@@ -841,7 +853,7 @@ int main(int argc,char *argv[])
                     animationState.frame = 0;
                     animationState.sortState = 0;
                     animationState.frameValVector.clear();
-                    animationState.secondaryList.clear();
+                    ClearSecondaryList();
                 }
                 SDL_Delay(5);
             }
@@ -862,10 +874,10 @@ int main(int argc,char *argv[])
                         animationState.frameValToggle = false;
                     }
 
-                    InsertionSort(listSize);
+                    InsertionSort();
                     animationState.frame++;
 
-                    if(animationState.frameValInvisibleA >= listSize) //Run the sort and check if it is finished
+                    if(animationState.frameValInvisibleA >= LISTSIZE) //Run the sort and check if it is finished
                     {
                         animationState.phase++;
                         animationState.frame = 0;                    
@@ -886,7 +898,7 @@ int main(int argc,char *argv[])
                         animationState.frameValToggle = false;
                     }
 
-                    BubbleSort(listSize);
+                    BubbleSort();
                     animationState.frame++;
 
                     if(animationState.frameValToggle == false && animationState.sortState == 0) //Run the sort and check if it is finished
@@ -914,7 +926,7 @@ int main(int argc,char *argv[])
                         animationState.frameValToggle = false;
                     }
 
-                    CocktailShakerSort(listSize); 
+                    CocktailShakerSort(); 
                     animationState.frame++;
 
                     if(animationState.frameValToggle == false && animationState.sortState == 0) //Run the sort and check if it is finished
@@ -944,7 +956,7 @@ int main(int argc,char *argv[])
                         animationState.frameValToggle = false;
                     }
 
-                    QuickSort(listSize);
+                    QuickSort();
                     animationState.frame++;
 
                     if(animationState.sortState == 3) //Run the sort and check if it is finished
@@ -968,10 +980,10 @@ int main(int argc,char *argv[])
                         animationState.frameValInvisibleB = -1;
                         animationState.sortState = 0;
                         animationState.frameValToggle = false;
-                        GenerateVector(listSize);
+                        GenerateVector();
                     }
 
-                    MergeSort(listSize,listSize);
+                    MergeSort(LISTSIZE);
                     animationState.frame++;
 
                     if(animationState.sortState == 3) //Run the sort and check if it is finished
@@ -996,7 +1008,7 @@ int main(int argc,char *argv[])
                         animationState.sortState = 0;
                         animationState.frameValToggle = false;
                     }
-                    RadixSort(listSize);
+                    RadixSort();
                     animationState.frame++;
 
                     if(animationState.frameValInvisibleB <= 0)
@@ -1023,7 +1035,7 @@ int main(int argc,char *argv[])
 
         SDL_SetRenderDrawColor(renderer,0,0,0,255);
         SDL_RenderClear(renderer);
-        DrawList(listSize,renderer);
+        DrawList(renderer);
         DrawText(renderer,&textRect);
 
         SDL_RenderPresent(renderer);
