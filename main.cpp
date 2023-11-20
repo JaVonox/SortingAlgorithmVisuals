@@ -29,10 +29,9 @@ SDL_Rect textRect;
 
 //Audio variable
 Instrument *tone = new MonophonicInstrument(
-    [](double freq, double time) {return 0.5 * Waveforms::square(freq, time);},
+    [](double freq, double time) {return 0.5 * Waveforms::pulse(freq, time,25);},
     Patches::BRASS_ENVELOPE
 );
-
 
 void AppendAudio(uint16_t freq, int framesLeft)
 {
@@ -82,7 +81,6 @@ void PopulateList()
         animationState.sortableList[i] = i+1;
     }
 }
-
 
 void DrawList(SDL_Renderer *renderer)
 {

@@ -1,8 +1,8 @@
 #include "sortingAlgorithms.h"
 
-double GetFreq(int inVal)
+double GetFreq(int inVal) //Used for external audio functions
 {
-    return 100+((float)(inVal)*1.9f);
+    return 60+((float)(inVal)*1.8f);
 }
 
 void CheckListIsSorted(AnimationState* animationState)
