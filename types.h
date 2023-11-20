@@ -1,3 +1,6 @@
+#ifndef _SORTALGVISTYPES_
+#define _SORTALGVISTYPES_
+
 #define LISTSIZE 300
 
 #include <vector>
@@ -26,3 +29,5 @@ struct aniState
 };
 
 typedef struct aniState AnimationState;
+
+#endif

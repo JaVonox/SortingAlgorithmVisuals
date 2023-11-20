@@ -6,7 +6,7 @@
 using namespace VSSynth;
 using namespace Generators;
 
-AnimationState animationState;
+AnimationState animationState; //This struct stores most of the relevant data for the animation and sorting datasets
 
 class ToneItem{
     public:
