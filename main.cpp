@@ -28,17 +28,18 @@ SDL_Surface* textSurface;
 SDL_Rect textRect;
 
 //Audio variable
-Tone tone(
-[](double frequency, double time) {
-    return Waveforms::triangle(frequency,time);
-});
+Instrument *tone = new MonophonicInstrument(
+    [](double freq, double time) {return 0.5 * Waveforms::square(freq, time);},
+    Patches::BRASS_ENVELOPE
+);
+
 
 void AppendAudio(uint16_t freq, int framesLeft)
 {
     if(freq > 0)
     {
         audioKeys.push_back(ToneItem(freq,framesLeft));
-        tone.playNote(freq);
+        tone->holdNote(freq);
     }
 }
 
@@ -49,7 +50,7 @@ void PollAudio()
     {
         if(audioKeys[i].timeRemaining <= 0)
         {
-            tone.stopNote(audioKeys[i].freq);
+            tone->releaseNote(audioKeys[i].freq);
 
             audioKeys.erase(audioKeys.begin()+i); //Remove the index from the vector
             //Reset the properties for the loop
@@ -69,7 +70,7 @@ void ClearAudio()
 
     for(uint16_t i=0;i<audioLen;i++) //This should serve as both an if statement and a loop
     {
-        tone.stopNote(audioKeys[i].freq);
+        tone->releaseNote(audioKeys[i].freq);
     }
     audioKeys.clear();
 }
@@ -226,19 +227,19 @@ int main(int argc,char *argv[])
 
     Synthesizer synth;
 
-    tone.setVolume(20);
+    tone->setVolume(20);
 
     synth.open();
-    synth.addSoundGenerator(&tone);
+    synth.addSoundGenerator(tone);
     synth.unpause();
 
     SDL_Event event;
 
-    _sleep(7000);
+    //_sleep(7000);
 
     while(true)
     {
-        
+
         if(animationState.frame == 0 && animationState.phase != -1)
         {
             SDL_Delay(100);
