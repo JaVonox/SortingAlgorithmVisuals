@@ -1,5 +1,4 @@
-#ifndef _SORTALGVISTYPES_
-#define _SORTALGVISTYPES_
+#pragma once
 
 #define LISTSIZE 300
 
@@ -29,5 +28,3 @@ struct aniState
 };
 
 typedef struct aniState AnimationState;
-
-#endif

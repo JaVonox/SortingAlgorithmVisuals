@@ -225,7 +225,7 @@ int main(int argc,char *argv[])
 
     Synthesizer synth;
 
-    tone->setVolume(20);
+    tone->setVolume(70);
 
     synth.open();
     synth.addSoundGenerator(tone);
@@ -233,7 +233,7 @@ int main(int argc,char *argv[])
 
     SDL_Event event;
 
-    //_sleep(7000);
+    _sleep(7000);
 
     while(true)
     {
