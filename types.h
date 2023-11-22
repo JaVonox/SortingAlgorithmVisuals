@@ -1,6 +1,6 @@
 #pragma once
 
-#define LISTSIZE 300
+#define LISTSIZE 299
 
 #include <vector>
 #include <tuple>

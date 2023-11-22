@@ -200,7 +200,7 @@ int main(int argc,char *argv[])
 
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
-    SDL_Window *window = SDL_CreateWindow("Sorting Algorithm Visualiser",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,1206,600,SDL_WINDOW_ALLOW_HIGHDPI);
+    SDL_Window *window = SDL_CreateWindow("Sorting Algorithm Visualiser",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,1200,675,SDL_WINDOW_ALLOW_HIGHDPI);
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window,-1,0);
 
